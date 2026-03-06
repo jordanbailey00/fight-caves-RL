@@ -56,4 +56,6 @@ gradle-app.setting
 /gradle/
 *.lock
 /.tools/
+.gradle-local/
+temp_gradle_test_info.log
 

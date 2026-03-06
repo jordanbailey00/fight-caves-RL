@@ -1,6 +1,6 @@
 # Deletion Candidates (Step 10)
 
-Generated from `config/headless_manifest.toml` at `2026-03-06T15:47:38.2563214Z`.
+Generated from `config/headless_manifest.toml` at `2026-03-06T20:07:26.6683105Z`.
 
 ## Candidate Module Directories
 
@@ -13,6 +13,7 @@ Headless runtime must keep these tick stages disabled:
 
 - `BotManager`
 - `ConnectionQueue`
+- `FloorItems`
 - `GrandExchange`
 - `Hunting`
 - `SaveLogs`
