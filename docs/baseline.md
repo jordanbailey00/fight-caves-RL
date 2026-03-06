@@ -1,4 +1,4 @@
-﻿# Baseline Report - Step 0
+# Baseline Report - Step 0
 
 Date: 2026-03-04 22:01:53 -05:00
 Branch: main
@@ -14,7 +14,7 @@ Executed Step 0 from plan.md:
 
 ## Stabilization Changes
 
-1. Compile fix in [RegionLoading.kt](/c:/Users/jorda/OneDrive/Documents/main/personal_projects/elvarg_RSPS/game/src/main/kotlin/content/entity/world/RegionLoading.kt:35)
+1. Compile fix in `game/src/main/kotlin/content/entity/world/RegionLoading.kt`
 - Moved.playerMoved.addFirst(::checkReload) -> Moved.playerMoved.add(0, ::checkReload)
 - Reason: playerMoved is an ObjectArrayList; addFirst is unavailable.
 - Semantics preserved: insertion at index 0 keeps "run first" ordering intent.
@@ -48,4 +48,5 @@ Executed Step 0 from plan.md:
 
 1. Without Java 21 and the modified cache, baseline tests fail in non-representative ways.
 2. Step 0 is now complete; extraction work can proceed to Step 1.
+
 

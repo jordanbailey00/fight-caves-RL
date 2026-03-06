@@ -26,6 +26,7 @@ import world.gregs.voidps.engine.client.variable.hasClock
 import world.gregs.voidps.engine.client.variable.remaining
 import world.gregs.voidps.engine.client.variable.start
 import world.gregs.voidps.engine.data.AccountManager
+import world.gregs.voidps.engine.data.ConfigFiles
 import world.gregs.voidps.engine.data.Settings
 import world.gregs.voidps.engine.data.definition.Areas
 import world.gregs.voidps.engine.data.definition.NPCDefinitions
@@ -239,6 +240,14 @@ class TzhaarFightCave(
         return false
     }
 
+    fun ensureWavesLoaded(files: ConfigFiles) {
+        if (waves.isLoaded()) {
+            return
+        }
+        val path = files.find(Settings["spawns.fight.cave.waves"])
+        waves.load(path)
+    }
+
     fun startWave(player: Player, wave: Int, start: Boolean) {
         player.close("tzhaar_fight_cave")
         player.open("tzhaar_fight_cave")
@@ -250,7 +259,8 @@ class TzhaarFightCave(
             Script.launch { accountManager.logout(player, false) }
             return
         }
-        if (start && wave != 63) {
+        val headlessEpisode = player["headless_episode", false]
+        if (start && wave != 63 && !headlessEpisode) {
             player.queue("fight_cave_warning") {
                 player.npc<Angry>("tzhaar_mej_jal", "You're on your own now JalYt, prepare to fight for your life!")
             }
@@ -261,7 +271,7 @@ class TzhaarFightCave(
             player["fight_cave_rotation"] = rotation
             player["fight_cave_start_time"] = start
             AuditLog.event(player, "start_fight_cave", start, wave, rotation)
-        } else if (wave == 63) {
+        } else if (wave == 63 && !headlessEpisode) {
             player.queue("fight_cave_warning") {
                 player.npc<Angry>("tzhaar_mej_jal", "Look out, here comes TzTok-Jad!")
             }
@@ -312,3 +322,10 @@ class TzhaarFightCave(
 
     fun hasFamiliar(player: Player) = false
 }
+
+
+
+
+
+
+

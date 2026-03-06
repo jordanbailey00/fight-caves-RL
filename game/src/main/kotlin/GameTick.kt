@@ -38,6 +38,7 @@ val headlessTickStageOrder =
     listOf(
         "PlayerResetTask",
         "NPCResetTask",
+        "NPCs",
         "InstructionTask",
         "World",
         "NPCTask",
@@ -131,6 +132,7 @@ fun getHeadlessTickStages(
     return listOf(
         PlayerResetTask(sequentialPlayer),
         NPCResetTask(sequentialNpc),
+        NPCs,
         InstructionTask(handlers),
         World,
         NPCTask(sequentialNpc),
@@ -169,3 +171,6 @@ private class SaveLogs : Runnable {
         }
     }
 }
+
+
+

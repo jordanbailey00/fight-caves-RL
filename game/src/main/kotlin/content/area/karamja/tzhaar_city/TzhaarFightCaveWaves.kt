@@ -8,12 +8,16 @@ class TzhaarFightCaveWaves {
 
     private val waves = Array<List<String>>(64) { emptyList() }
     private val rotations = Array<Array<List<Direction>>>(64) { Array(15) { listOf() } }
+    private var loaded = false
 
     fun npcs(wave: Int): List<String> = waves[wave - 1]
 
     fun spawns(wave: Int, rotation: Int): List<Direction> = rotations[wave - 1][rotation - 1]
 
+    fun isLoaded(): Boolean = loaded
+
     fun load(path: String) = timedLoad("fight cave wave rotation") {
+        loaded = false
         var count = 0
         Config.fileReader(path) {
             while (nextSection()) {
@@ -39,6 +43,7 @@ class TzhaarFightCaveWaves {
                 }
             }
         }
+        loaded = true
         count
     }
 }

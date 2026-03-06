@@ -1,4 +1,5 @@
 import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
+import org.gradle.api.tasks.testing.Test
 
 plugins {
     id("tasks.metadata")
@@ -13,9 +14,6 @@ dependencies {
     implementation(project(":network"))
     implementation(project(":types"))
     implementation(project(":config"))
-    if (findProperty("includeDb") != null) {
-        implementation(project(":database"))
-    }
     implementation(libs.fastutil)
     implementation(libs.kasechange)
     implementation(libs.rsmod.pathfinder)
@@ -32,6 +30,19 @@ dependencies {
 application {
     mainClass.set("Main")
     tasks.run.get().workingDir = rootProject.projectDir
+}
+
+private val headlessDataBundleFiles: List<String> by lazy {
+    val allowlist = rootProject.file("config/headless_data_allowlist.toml")
+    if (!allowlist.isFile) {
+        emptyList()
+    } else {
+        Regex("\"(data/[^\"]+\\.toml)\"")
+            .findAll(allowlist.readText())
+            .map { match -> match.groupValues[1] }
+            .toSet()
+            .sorted()
+    }
 }
 
 tasks {
@@ -58,21 +69,11 @@ tasks {
     named<ShadowJar>("shadowJar") {
         dependsOn("scriptMetadata")
         from(layout.buildDirectory.file("scripts.txt"))
-        val db = findProperty("includeDb") != null
         minimize {
-            if (db) {
-                exclude(project(":database"))
-                exclude(dependency("org.postgresql:postgresql:.*"))
-                exclude(dependency("org.jetbrains.exposed:exposed-jdbc:.*"))
-            }
             exclude("world/gregs/voidps/engine/log/**")
             exclude(dependency("ch.qos.logback:logback-classic:.*"))
         }
-        if (db) {
-            archiveBaseName.set("void-server-db-$version")
-        } else {
-            archiveBaseName.set("void-server-$version")
-        }
+        archiveBaseName.set("void-server-$version")
         archiveClassifier.set("")
         archiveVersion.set("")
         // Replace logback file as the custom colour classes can't be individually excluded from minimization
@@ -96,6 +97,77 @@ tasks {
         from(replacement)
     }
 
+    register<ShadowJar>("headlessShadowJar") {
+        dependsOn("scriptMetadata")
+        from(sourceSets["main"].output)
+        from(layout.buildDirectory.file("scripts.txt"))
+        configurations = listOf(project.configurations.runtimeClasspath.get())
+        archiveBaseName.set("fight-caves-headless")
+        archiveClassifier.set("")
+        archiveVersion.set("")
+        manifest {
+            attributes["Main-Class"] = "HeadlessMain"
+        }
+        mergeServiceFiles()
+    }
+
+    register<JavaExec>("generateHeadlessDeletionCandidates") {
+        dependsOn("classes")
+        classpath = sourceSets["main"].runtimeClasspath
+        mainClass.set("HeadlessDeletionCandidates")
+        workingDir = rootProject.projectDir
+    }
+
+    register("packageHeadless") {
+        dependsOn("generateHeadlessDeletionCandidates", "headlessDistZip")
+    }
+
+    register("headlessDist") {
+        dependsOn("headlessDistZip")
+    }
+
+    register<Test>("e2eTest") {
+        description = "Runs Fight Caves headless/oracle end-to-end release gate suites."
+        group = "verification"
+        useJUnitPlatform()
+        testClassesDirs = sourceSets["test"].output.classesDirs
+        classpath = sourceSets["test"].runtimeClasspath
+        jvmArgs("-XX:-OmitStackTraceInFastThrow")
+        maxHeapSize = "2048m"
+        maxParallelForks = 1
+        forkEvery = 1
+        systemProperty("java.awt.headless", "true")
+        testLogging {
+            events("passed", "skipped", "failed")
+        }
+        filter {
+            includeTestsMatching("HeadlessBootWithoutNetworkTest")
+            includeTestsMatching("HeadlessTickPipelineOrderTest")
+            includeTestsMatching("DeterministicReplaySameSeedSameTraceTest")
+            includeTestsMatching("DeterministicReplayDifferentSeedDivergesTest")
+            includeTestsMatching("RngCounterMonotonicityTest")
+            includeTestsMatching("ParityHarnessSingleWaveTraceTest")
+            includeTestsMatching("ParityHarnessFullRunTraceTest")
+            includeTestsMatching("ParityHarnessJadHealerScenarioTest")
+            includeTestsMatching("ParityHarnessTzKekSplitScenarioTest")
+            includeTestsMatching("ActionWalkToUsesPathfinderTest")
+            includeTestsMatching("ActionEatDrinkLockoutRejectionTest")
+            includeTestsMatching("ActionPrayerToggleParityTest")
+            includeTestsMatching("EpisodeInitSetsFixedStatsTest")
+            includeTestsMatching("EpisodeInitSetsLoadoutAndConsumablesTest")
+            includeTestsMatching("EpisodeInitResetsWaveStateTest")
+            includeTestsMatching("EpisodeInitUsesProvidedSeedTest")
+            includeTestsMatching("HeadlessPackageStartsWithoutExcludedSystemsTest")
+            includeTestsMatching("HeadlessScriptRegistryContainsFightCaveHandlersTest")
+            includeTestsMatching("HeadlessScriptRegistryExcludesUnrelatedSystemsTest")
+            includeTestsMatching("HeadlessStepRateBenchmarkTest")
+            includeTestsMatching("HeadlessLongRunStabilityTest")
+            includeTestsMatching("HeadlessBatchSteppingParityTest")
+            includeTestsMatching("HeadlessPerformanceReportGenerationTest")
+            includeTestsMatching("ProjectTreeMatchesApprovedManifestTest")
+            includeTestsMatching("ForbiddenPathsAbsentTest")
+        }
+    }
     register("printVersion") {
         doLast {
             println(project.version)
@@ -110,6 +182,9 @@ tasks {
 
     test {
         jvmArgs("-XX:-OmitStackTraceInFastThrow")
+        maxHeapSize = "2048m"
+        maxParallelForks = 1
+        forkEvery = 1
     }
 }
 
@@ -162,6 +237,76 @@ distributions {
             from(tempShell)
         }
     }
+
+    create("headless") {
+        distributionBaseName = "fight-caves-headless"
+        contents {
+            from(tasks["headlessShadowJar"])
+            from(rootProject.file("config/headless_data_allowlist.toml"))
+            from(rootProject.file("config/headless_manifest.toml"))
+            from(rootProject.file("config/headless_scripts.txt"))
+
+            val resourcesDir = layout.projectDirectory.dir("src/main/resources")
+            from(resourcesDir.file("game.properties"))
+
+            for (relativePath in headlessDataBundleFiles) {
+                val file = rootProject.file(relativePath)
+                if (!file.isFile) {
+                    continue
+                }
+                from(file) {
+                    into(relativePath.substringBeforeLast('/'))
+                }
+            }
+
+            val emptyDirs = setOf("cache", "saves")
+            for (dir in emptyDirs) {
+                val file =
+                    layout.buildDirectory
+                        .get()
+                        .dir("tmp/empty-headless/$dir/")
+                        .asFile
+                file.mkdirs()
+            }
+            from(layout.buildDirectory.dir("tmp/empty-headless/")) {
+                into("data")
+            }
+
+            val tempDir =
+                layout.buildDirectory
+                    .dir("tmp/headless/scripts")
+                    .get()
+                    .asFile
+            tempDir.mkdirs()
+
+            val shell = File(tempDir, "run-headless.sh")
+            shell.writeText(
+                """
+                |#!/usr/bin/env bash
+                |title="Fight Caves Headless"
+                |echo -e '\033]2;'${'$'}title'\007'
+                |java -jar fight-caves-headless.jar
+                |if [ $? -ne 0 ]; then
+                |  echo "Error: The Java application exited with a non-zero status."
+                |  read -p "Press enter to continue..."
+                |fi
+                |""".trimMargin(),
+            )
+            shell.setExecutable(true)
+            from(shell)
+
+            val bat = File(tempDir, "run-headless.bat")
+            bat.writeText(
+                """
+                |@echo off
+                |title Fight Caves Headless
+                |java -jar fight-caves-headless.jar
+                |pause
+                |""".trimMargin(),
+            )
+            from(bat)
+        }
+    }
 }
 
 dependencies {
@@ -192,3 +337,14 @@ spotless {
         flexmark()
     }
 }
+
+
+
+
+
+
+
+
+
+
+

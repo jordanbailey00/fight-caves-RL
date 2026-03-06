@@ -53,11 +53,11 @@ Required for headless runtime:
 Oracle-only (keep for parity harness path):
 - `network`
 
-Not required at headless runtime:
+Physically pruned in Step 13:
 - `tools`
+- `database`
 
-Conditional:
-- `database` only if non-file storage is explicitly enabled.
+No conditional DB module support remains in the pruned repository.
 
 ### 3.2 Tick and World Pipeline
 
@@ -69,7 +69,7 @@ Required stage order basis (from `GameTick.kt`):
 5. `GrandExchange` (candidate to disable in headless)
 6. `ConnectionQueue` (disable in headless)
 7. `NPCs`
-8. `FloorItems`
+8. `FloorItems` (disabled in headless)
 9. `InstructionTask`
 10. `World`
 11. `NPCTask`
@@ -176,7 +176,8 @@ Loadout dependencies:
 - `data/minigame/tai_bwo_wannai_cleanup/tai_bwo_wannai_cleanup.items.toml`
 - `data/skill/fishing/fish.items.toml`
 - `data/skill/herblore/potion.items.toml`
-
+- `data/entity/player/inventory/inventory.invs.toml` (inventory capacity/slots)
+- `data/entity/player/equipment/worn_equipment.invs.toml` (equipment slot container)
 Combat/prayer/player defs needed by retained scripts:
 - `data/entity/player/combat/weapon_animations.toml`
 - `data/entity/player/combat/combat_styles/weapon_styles.toml`
@@ -284,5 +285,9 @@ High confidence (direct evidence):
 Inference-based (must be validated by tests):
 - Minimal shared definition set needed once headless module wiring bypasses full `dirs.txt` scanning.
 - Whether additional animation/sound/interface files are needed for strict parity beyond no-op visual calls.
+
+
+
+
 
 

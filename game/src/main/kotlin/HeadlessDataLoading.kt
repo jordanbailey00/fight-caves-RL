@@ -94,7 +94,7 @@ fun loadHeadlessConfigFiles(allowlist: HeadlessDataAllowlist = loadHeadlessDataA
     val files = resolveAllowlistedDataFiles(allowlist)
     validateRequiredSettings(allowlist.requiredSettings, files)
 
-    if (allowlist.requiredSourceRegions.isNotEmpty()) {
+    if (allowlist.requiredSourceRegions.isNotEmpty() && Settings.getOrNull("headless.map.regions") == null) {
         Settings.load(
             mapOf(
                 "headless.map.regions" to allowlist.requiredSourceRegions.joinToString(","),
@@ -151,4 +151,6 @@ internal fun resolvePath(root: Path, path: String): Path {
         root.resolve(normalized).normalize()
     }
 }
+
+
 

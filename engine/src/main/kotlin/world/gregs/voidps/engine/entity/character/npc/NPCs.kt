@@ -224,3 +224,4 @@ object NPCs : Runnable,
         }
     }
 }
+

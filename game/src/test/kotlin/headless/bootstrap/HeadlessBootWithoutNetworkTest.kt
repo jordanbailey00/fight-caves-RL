@@ -31,6 +31,7 @@ internal class HeadlessBootWithoutNetworkTest {
 
         val stageNames = describeTickStages(runtime.stages)
         assertFalse(stageNames.contains("ConnectionQueue"), "Headless runtime should not include ConnectionQueue stage.")
+        assertFalse(stageNames.contains("FloorItems"), "Headless runtime should not include FloorItems stage.")
 
         val serverField = Main::class.java.getDeclaredField("server")
         serverField.isAccessible = true
@@ -39,3 +40,5 @@ internal class HeadlessBootWithoutNetworkTest {
         runtime.tick()
     }
 }
+
+

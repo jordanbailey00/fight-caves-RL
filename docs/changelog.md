@@ -308,3 +308,381 @@ Append-only log of implementation changes and decisions.
 ### Outcome
 - Step 4 exit criteria satisfied.
 - Next target is Step 5 (episode initialization contract implementation).
+
+## 2026-03-05 17:04:47 -05:00 - Iteration 08 Step 5 Completed (Episode Initialization Contract)
+
+### Decisions
+1. Implemented episode reset as a first-class headless runtime API so future action/observation work can assume a stable deterministic start state.
+2. Preserved Void-native semantics for wave boot, dynamic instance creation, prayer/run state, inventory/equipment containers, and RNG path.
+3. Expanded headless data closure to include missing inventory definition files required for equipment/inventory containers in headless mode.
+4. Standardized local verification on Java 21 because project/test bytecode target is classfile 65.
+
+### Changes Made
+1. Added `game/src/main/kotlin/FightCaveEpisodeInitializer.kt`:
+   - `FightCaveEpisodeConfig`
+   - `FightCaveEpisodeState`
+   - deterministic `reset(player, config)` implementation
+2. Updated `game/src/main/kotlin/HeadlessMain.kt`:
+   - runtime now captures `TzhaarFightCave` script instance at bootstrap
+   - `HeadlessRuntime` now exposes `resetFightCaveEpisode(...)` helpers
+3. Added Step 5 tests:
+   - `game/src/test/kotlin/headless/episode/EpisodeInitSetsFixedStatsTest.kt`
+   - `game/src/test/kotlin/headless/episode/EpisodeInitSetsLoadoutAndConsumablesTest.kt`
+   - `game/src/test/kotlin/headless/episode/EpisodeInitResetsWaveStateTest.kt`
+   - `game/src/test/kotlin/headless/episode/EpisodeInitUsesProvidedSeedTest.kt`
+4. Added Step 5 artifact:
+   - `docs/episode_init_contract.md`
+5. Updated data/manifests for loadout container closure:
+   - `config/headless_data_allowlist.toml`
+   - `config/headless_manifest.toml`
+   - `docs/extraction_manifest.md`
+   - added:
+     - `data/entity/player/inventory/inventory.invs.toml`
+     - `data/entity/player/equipment/worn_equipment.invs.toml`
+     - `definitions.inventories` required setting key
+6. Updated tracking docs:
+   - `plan.md` (Iteration 08 + Step 5 complete)
+   - `spec.md` execution checkpoint (Step 5 complete)
+7. Installed Java 21 runtime locally for verification:
+   - `winget install -e --id EclipseAdoptium.Temurin.21.JDK --scope machine`
+
+### Verification
+1. Passed Step 5 test gate:
+   - `./gradlew :game:test --tests "EpisodeInit*" --rerun-tasks --no-daemon`
+2. Passed regression gates after allowlist updates:
+   - `./gradlew :game:test --tests "headless.manifest.HeadlessManifestContainsFightCaveClosureTest" --tests "headless.manifest.HeadlessManifestRejectsExcludedSystemsTest" --tests "HeadlessLoadsFightCaveDataOnlyTest" --tests "HeadlessFailsOnMissingFightCaveWaveDataTest" --tests "HeadlessCollisionRegionSubsetTest" --tests "content.area.karamja.tzhaar_city.TzhaarFightCaveTest" --no-daemon`
+
+### Outcome
+- Step 5 exit criteria satisfied.
+- Next target is Step 6 (action adapter).
+
+## 2026-03-05 17:32:15 -05:00 - Iteration 09 Step 6 Completed (Action Adapter)
+
+### Decisions
+1. Implemented Step 6 action ingestion as a dedicated adapter (`HeadlessActionAdapter`) to keep action semantics explicit and testable.
+2. Enforced one-intent-per-tick at adapter boundary (`headless_last_action_tick`) to satisfy the API contract and prevent multi-action drift.
+3. Used deterministic visible-NPC ordering (tile/id/index comparator) plus visible-index mapping so policy targets remain stable across runs.
+
+### Changes Made
+1. Added `game/src/main/kotlin/HeadlessActionAdapter.kt`:
+   - stable action enum/id mapping (`HeadlessActionType`)
+   - action payloads (`HeadlessAction`)
+   - result contract (`HeadlessActionResult`) with mandatory `action_applied` metadata
+   - standardized rejection reasons (`HeadlessActionRejectReason`)
+   - canonical handlers for walk/attack/prayer/eat/drink/run/wait actions
+2. Updated `game/src/main/kotlin/HeadlessMain.kt` / `HeadlessRuntime`:
+   - bootstrap wiring for `HeadlessActionAdapter`
+   - exposed headless action APIs: `visibleFightCaveNpcTargets`, `applyFightCaveAction`, `applyFightCaveActionAndTick`
+3. Added Step 6 tests:
+   - `game/src/test/kotlin/headless/action/ActionWalkToUsesPathfinderTest.kt`
+   - `game/src/test/kotlin/headless/action/ActionAttackNpcDeterministicIndexMappingTest.kt`
+   - `game/src/test/kotlin/headless/action/ActionPrayerToggleParityTest.kt`
+   - `game/src/test/kotlin/headless/action/ActionEatDrinkLockoutRejectionTest.kt`
+   - `game/src/test/kotlin/headless/action/ActionInvalidTargetRejectionTest.kt`
+4. Fixed Step 6 compile blockers during implementation:
+   - added missing `running` extension import
+   - replaced unsupported viewport NPC conversion path with explicit primitive iterator mapping
+
+### Verification
+1. Compile gate passed:
+   - `./gradlew :game:compileKotlin --no-daemon --rerun-tasks`
+2. Passed Step 6 tests:
+   - `./gradlew :game:test --tests "ActionWalkToUsesPathfinderTest" --tests "ActionAttackNpcDeterministicIndexMappingTest" --tests "ActionPrayerToggleParityTest" --tests "ActionEatDrinkLockoutRejectionTest" --tests "ActionInvalidTargetRejectionTest" --no-daemon --rerun-tasks`
+
+### Outcome
+- Step 6 exit criteria satisfied.
+- Next target is Step 7 (observation builder contract).
+
+## 2026-03-05 17:46:58 -05:00 - Iteration 10 Step 7 Completed (Observation Builder Contract)
+
+### Decisions
+1. Implemented Step 7 as a dedicated observation builder (`HeadlessObservationBuilder`) so schema/versioning and ordering are centralized.
+2. Reused Step 6 visible-NPC mapping to guarantee deterministic NPC ordering parity between action targets and observation indices.
+3. Kept future-leakage fields disabled by default and exposed only through explicit debug opt-in.
+
+### Changes Made
+1. Added `game/src/main/kotlin/HeadlessObservationBuilder.kt`:
+   - `HeadlessObservationV1` schema model
+   - strict versioning constants and top-level field order contract
+   - ordered serialization helper (`toOrderedMap()`)
+   - deterministic player/wave/NPC/lockout extraction
+2. Updated `game/src/main/kotlin/HeadlessMain.kt` / `HeadlessRuntime`:
+   - added observation wiring and runtime API `observeFightCave(...)`
+3. Added Step 7 tests:
+   - `game/src/test/kotlin/headless/observation/ObservationSchemaCompletenessTest.kt`
+   - `game/src/test/kotlin/headless/observation/ObservationNpcOrderingDeterminismTest.kt`
+   - `game/src/test/kotlin/headless/observation/ObservationNoFutureLeakageDefaultTest.kt`
+   - `game/src/test/kotlin/headless/observation/ObservationVersioningContractTest.kt`
+4. Added Step 7 artifact:
+   - `docs/observation_schema.md`
+
+### Verification
+1. Passed Step 7 tests:
+   - `./gradlew :game:test --tests "ObservationSchemaCompletenessTest" --tests "ObservationNpcOrderingDeterminismTest" --tests "ObservationNoFutureLeakageDefaultTest" --tests "ObservationVersioningContractTest" --no-daemon --rerun-tasks`
+
+### Outcome
+- Step 7 exit criteria satisfied.
+- Next target is Step 8 (determinism hardening and RNG governance).
+
+## 2026-03-05 18:02:37 -05:00 - Iteration 11 Step 8 Completed (Determinism and RNG Governance)
+
+### Decisions
+1. Kept Fight Caves RNG on the shared `world.gregs.voidps.type.random` path and moved episode seeding to tracked seeded RNG utilities.
+2. Implemented replay determinism around `seed + action_trace` using a dedicated headless replay runner.
+3. Added static governance checks to prevent direct `kotlin.random.Random` imports in Fight Caves closure code.
+
+### Changes Made
+1. Updated `types/src/main/kotlin/world/gregs/voidps/type/Random.kt`:
+   - added `setSeededRandom(seed, trackCalls = true)`
+   - added `RandomDiagnostics`, `randomDiagnostics()`, and `randomCallCount()`
+2. Updated `game/src/main/kotlin/FightCaveEpisodeInitializer.kt`:
+   - now seeds RNG via `setSeededRandom(config.seed, trackCalls = true)`
+   - removed direct `kotlin.random.Random` usage from closure reset path
+3. Added `game/src/main/kotlin/HeadlessReplayRunner.kt`:
+   - `HeadlessReplayStep`
+   - `HeadlessReplayTickSnapshot`
+   - `HeadlessReplayResult`
+   - deterministic replay execution over action traces
+4. Added Step 8 tests:
+   - `game/src/test/kotlin/headless/determinism/DeterministicReplaySameSeedSameTraceTest.kt`
+   - `game/src/test/kotlin/headless/determinism/DeterministicReplayDifferentSeedDivergesTest.kt`
+   - `game/src/test/kotlin/headless/determinism/FightCaveClosureNoDirectRandomUsageTest.kt`
+   - `game/src/test/kotlin/headless/determinism/RngCounterMonotonicityTest.kt`
+5. Added Step 8 artifact:
+   - `docs/determinism.md`
+
+### Verification
+1. Passed Step 8 tests:
+   - `./gradlew :game:test --tests "DeterministicReplaySameSeedSameTraceTest" --tests "DeterministicReplayDifferentSeedDivergesTest" --tests "FightCaveClosureNoDirectRandomUsageTest" --tests "RngCounterMonotonicityTest" --no-daemon`
+
+### Outcome
+- Step 8 exit criteria satisfied.
+- Next target is Step 9 (oracle vs headless differential parity harness).
+
+
+## 2026-03-05 19:59:49 -05:00 - Iteration 12 Step 9 Completed (Oracle vs Headless Differential Parity Harness)
+
+### Decisions
+1. Implemented Step 9 as a reusable differential harness that runs both oracle and headless through the same runtime API to reduce comparison drift.
+2. Preserved fail-fast comparison semantics and persisted first-divergence artifacts for deterministic mismatch debugging.
+3. Hardened parity runtime reset/bootstrap after diagnosing divergence caused by uninitialized drop tables during NPC death cleanup.
+
+### Changes Made
+1. Added shared runtime contract and oracle bootstrap path:
+   - game/src/main/kotlin/FightCaveSimulationRuntime.kt
+   - game/src/main/kotlin/OracleMain.kt
+2. Added Step 9 harness core:
+   - game/src/main/kotlin/ParityHarness.kt
+   - includes ParitySnapshot, ParityMismatch, and first-divergence artifact writing to `temp/parity/first_divergence/`.
+3. Added Step 9 test matrix and support:
+   - game/src/test/kotlin/headless/parity/ParityHarnessSingleWaveTraceTest.kt
+   - game/src/test/kotlin/headless/parity/ParityHarnessFullRunTraceTest.kt
+   - game/src/test/kotlin/headless/parity/ParityHarnessJadHealerScenarioTest.kt
+   - game/src/test/kotlin/headless/parity/ParityHarnessTzKekSplitScenarioTest.kt
+   - game/src/test/kotlin/headless/parity/ParityHarnessTestSupport.kt
+4. Added Step 9 docs artifact:
+   - docs/parity_harness.md
+5. Applied parity stability fixes discovered during implementation/debugging:
+   - game/src/main/kotlin/RuntimeBootstrap.kt: initialize DropTables in headless cache bootstrap.
+   - game/src/main/kotlin/ParityHarness.kt: clear GameObjects during runtime reset.
+   - game/src/main/kotlin/HeadlessDataLoading.kt: preserve explicit headless.map.regions overrides.
+   - game/src/test/kotlin/headless/parity/ParityHarnessTestSupport.kt: deterministic split scenario hook hardening.
+
+### Verification
+1. Initial Step 9 run under Java 17 failed before class execution due to Java 21 bytecode target mismatch.
+2. Re-ran with Java 21 and passed Step 9 gate:
+   - ./gradlew :game:test --tests "ParityHarnessSingleWaveTraceTest" --tests "ParityHarnessFullRunTraceTest" --tests "ParityHarnessJadHealerScenarioTest" --tests "ParityHarnessTzKekSplitScenarioTest" --no-daemon
+
+### Outcome
+- Step 9 exit criteria satisfied.
+- Next target is Step 10 (runtime pruning and packaging).
+
+## 2026-03-05 20:21:04 -05:00 - Iteration 13 Step 10 Completed (Runtime Pruning and Packaging)
+
+### Decisions
+1. Kept headed/oracle runtime behavior intact while enforcing stricter default pruning semantics only for `runtime.mode=headless`.
+2. Added fail-fast startup guards so accidental activation of excluded systems in headless mode stops boot immediately.
+3. Implemented packaging and deletion-inventory generation as build tasks to make Step 10 repeatable and testable.
+
+### Changes Made
+1. Updated runtime settings bootstrap in game/src/main/kotlin/RuntimeBootstrap.kt:
+   - added headless pruned defaults for bots/events/autosave/spawn file bindings.
+2. Updated headless startup in game/src/main/kotlin/HeadlessMain.kt:
+   - added strict pruning guard checks for excluded stages, excluded script namespaces, and required pruned settings.
+3. Added deletion inventory generator in game/src/main/kotlin/HeadlessDeletionCandidates.kt:
+   - generates docs/deletion_candidates.md from config/headless_manifest.toml closure rules.
+4. Updated game/build.gradle.kts with Step 10 packaging tasks:
+   - headlessShadowJar (outputs `fight-caves-headless.jar`, Main-Class=HeadlessMain)
+   - generateHeadlessDeletionCandidates
+   - packageHeadless
+   - headless distribution (headlessDistZip) containing headless jar + headless config artifacts + allowlisted data + run scripts.
+5. Added Step 10 docs artifacts:
+   - docs/runtime_pruning.md
+   - regenerated docs/deletion_candidates.md
+6. Added Step 10 tests:
+   - game/src/test/kotlin/headless/pruning/HeadlessPackageStartsWithoutExcludedSystemsTest.kt
+   - game/src/test/kotlin/headless/pruning/HeadedModeStillPassesBaselineFightCaveTests.kt
+   - game/src/test/kotlin/headless/pruning/HeadlessDeletionCandidateInventoryTest.kt
+
+### Verification
+1. Compile gates passed:
+   - ./gradlew :game:compileKotlin :game:compileTestKotlin --no-daemon
+2. Step 10 tests passed:
+   - ./gradlew :game:test --tests "HeadlessPackageStartsWithoutExcludedSystemsTest" --tests "HeadedModeStillPassesBaselineFightCaveTests" --tests "HeadlessDeletionCandidateInventoryTest" --no-daemon
+3. Headless packaging build gate passed:
+   - ./gradlew :game:packageHeadless --no-daemon
+4. Headed regression gate passed:
+   - ./gradlew :game:test --tests "content.area.karamja.tzhaar_city.TzhaarFightCaveTest" --no-daemon
+5. Parity regression matrix passed after Step 10 changes:
+   - ./gradlew :game:test --tests "ParityHarnessSingleWaveTraceTest" --tests "ParityHarnessFullRunTraceTest" --tests "ParityHarnessJadHealerScenarioTest" --tests "ParityHarnessTzKekSplitScenarioTest" --no-daemon
+
+### Outcome
+- Step 10 exit criteria satisfied.
+- Next target is Step 11 (performance validation, post-parity only).
+
+## 2026-03-05 20:22:14 -05:00 - Iteration 13 Entry Correction
+
+The previous Step 10 entry contains formatting artifacts from shell escaping. Canonical text for the affected lines:
+
+1. Decision 1 should read: kept headed/oracle behavior intact while enforcing stricter defaults only for `runtime.mode=headless`.
+2. Step 10 packaging artifact name should read: `fight-caves-headless.jar`.
+3. Step 9 artifact directory reference should read: `temp/parity/first_divergence/`.
+
+## 2026-03-05 21:01:10 -05:00 - Iteration 14 Step 11 Completed (Performance Validation)
+
+### Decisions
+1. Added batch stepping as a first-class runtime API to support high-throughput simulation runs while preserving one-action-per-step semantics.
+2. Kept Step 11 optimizations behavior-neutral and required a full Step 9 parity rerun after the optimization batch.
+3. Standardized Step 11 reporting on generated benchmark artifacts (`docs/performance_benchmark.log`) plus a human-readable summary (`docs/performance_report.md`).
+
+### Changes Made
+1. Added `game/src/main/kotlin/HeadlessBatchStepping.kt`:
+   - `runFightCaveBatch(...)`
+   - `HeadlessBatchStepSnapshot`
+   - `HeadlessBatchRunResult`
+2. Optimized hot paths without gameplay-semantic changes:
+   - single-pass `prayerPotionDoseCount(...)` inventory scan in `game/src/main/kotlin/HeadlessObservationBuilder.kt`
+   - validated/optimized `HeadlessRuntime.tick(times)` loop in `game/src/main/kotlin/HeadlessMain.kt`
+3. Added Step 11 performance test suite:
+   - `game/src/test/kotlin/headless/performance/HeadlessStepRateBenchmarkTest.kt`
+   - `game/src/test/kotlin/headless/performance/HeadlessLongRunStabilityTest.kt`
+   - `game/src/test/kotlin/headless/performance/HeadlessBatchSteppingParityTest.kt`
+   - `game/src/test/kotlin/headless/performance/HeadlessPerformanceReportGenerationTest.kt`
+4. Added/updated Step 11 artifacts:
+   - `docs/performance_benchmark.log`
+   - `docs/performance_report.md`
+
+### Verification
+1. Initial combined Step 11 + parity run failed under Java 17 with:
+   - `UnsupportedClassVersionError` (class file version 65.0)
+2. Re-ran under Java 21 and passed:
+   - `./gradlew :game:test --tests "HeadlessStepRateBenchmarkTest" --tests "HeadlessLongRunStabilityTest" --tests "HeadlessBatchSteppingParityTest" --tests "HeadlessPerformanceReportGenerationTest" --tests "ParityHarnessSingleWaveTraceTest" --tests "ParityHarnessFullRunTraceTest" --tests "ParityHarnessJadHealerScenarioTest" --tests "ParityHarnessTzKekSplitScenarioTest" --no-daemon`
+3. Benchmark artifact values (latest):
+   - `throughput.ticks_per_second=8891.93`
+   - `soak.ticks_per_second=9186.05`
+
+### Outcome
+- Step 11 exit criteria satisfied.
+- Step status advanced: Step 11 complete, Step 12 next.
+
+
+## 2026-03-06 10:42:00 -05:00 - Iteration 15 Step 12 Re-Run Completed (Acceptance Gate with Speedups)
+
+### Decisions
+1. Re-ran the full Step 12 acceptance matrix after applying test-runtime speedups, without reducing Fight Caves/headless/parity acceptance scope.
+2. Standardized acceptance verification on Java 21 to match project bytecode target and prevent cross-JDK drift.
+3. Captured release-gate output in a dedicated release-candidate artifact for sign-off traceability.
+
+### Changes Made
+1. Confirmed acceptance-safe speedups in the active tree:
+   - unrelated legacy tests under `game/src/test/kotlin/content/**` physically pruned
+   - required headed regression test retained: `content/area/karamja/tzhaar_city/TzhaarFightCaveTest.kt`
+   - `e2eTest` worker hardening in `game/build.gradle.kts` (`maxHeapSize=2048m`, `maxParallelForks=1`, `forkEvery=1`)
+2. Generated/updated Step 12 artifact:
+   - `docs/release_candidate.md`
+
+### Verification
+1. `./gradlew clean --no-daemon` - PASS (~17s)
+2. `./gradlew :game:test --no-daemon` - PASS (~5m45s)
+3. `./gradlew :game:test --tests "*Headless*" --no-daemon` - PASS (~2m38s)
+4. `./gradlew :game:test --tests "*Parity*" --no-daemon` - PASS (~2m44s)
+5. `./gradlew :game:test --tests "content.area.karamja.tzhaar_city.TzhaarFightCaveTest" --no-daemon` - PASS (~40s)
+6. `./gradlew :game:headlessDist --no-daemon` - PASS (~25s)
+7. `./gradlew :game:e2eTest --no-daemon` - PASS (~2m26s)
+
+### Outcome
+- Step 12 exit criteria satisfied on speedup-hardened test/runtime configuration.
+
+## 2026-03-06 10:58:00 -05:00 - Iteration 16 Step 13 Closeout Completed (Post-Prune Validation)
+
+### Decisions
+1. Closed Step 13 with explicit post-prune structural assertions and prune-manifest retention checks for the pruned content test root.
+2. Regenerated deletion-candidate inventory after speedup changes to preserve current-state deletion accounting.
+3. Preserved recovery refs (branch + tag) for low-risk rollback of prune state if needed.
+
+### Changes Made
+1. Updated prune report and status tracking docs:
+   - `docs/repo_prune_report.md`
+   - `plan.md`
+   - `spec.md`
+2. Updated prune manifest contract and test support:
+   - `config/headless_prune_manifest.toml` (version `2`, `pruned_test_root`, `retained_test_files`)
+   - pruning test support/assertions enforce retained file closure under pruned root
+3. Regenerated prune inventory artifact:
+   - `docs/deletion_candidates.md`
+
+### Verification
+1. `./gradlew :game:test --tests "ProjectTreeMatchesApprovedManifestTest" --tests "ForbiddenPathsAbsentTest" --tests "HeadlessDeletionCandidateInventoryTest" --no-daemon` - PASS
+2. `./gradlew :game:generateHeadlessDeletionCandidates --no-daemon` - PASS
+   - result: `modules=0`, `codeFiles=872`, `dataFiles=3012`
+
+### Outcome
+- Step 13 exit criteria satisfied after post-prune validation rerun.
+
+## 2026-03-06 11:36:00 -05:00 - Iteration 17 Textual Parity Alignment Hardening
+
+### Decisions
+1. Treated documentation/manifests/guard-lists as contract surfaces and aligned them to the implemented runtime to avoid future drift.
+2. Standardized `FloorItems` as explicitly excluded in headless mode across spec, manifest, runtime guard list, and pruning tests.
+3. Corrected episode init docs to match implemented wave boot semantics (`start = false`) and clarified HP scale wording.
+
+### Changes Made
+1. Updated `spec.md`:
+   - explicit current headless excluded stage set now includes `FloorItems`
+   - fixed skill/resources wording clarifies `70 HP` display vs internal `700`
+2. Updated `docs/episode_init_contract.md`:
+   - corrected wave boot call to `fightCave.startWave(..., start = false)`
+   - added rationale for `start = false` in headless episodes
+3. Updated `config/headless_manifest.toml`:
+   - added `FloorItems` to `[tick_pipeline].headless_candidate_excluded`
+4. Updated `docs/runtime_pruning.md` and `docs/extraction_manifest.md`:
+   - aligned excluded-stage and stage notes with headless implementation
+5. Updated runtime/test guards:
+   - `game/src/main/kotlin/HeadlessMain.kt`
+   - `game/src/test/kotlin/headless/pruning/HeadlessPackageStartsWithoutExcludedSystemsTest.kt`
+   - `game/src/test/kotlin/headless/bootstrap/HeadlessBootWithoutNetworkTest.kt`
+6. Updated execution tracking docs:
+   - `plan.md` (Iteration 17 entry)
+
+### Outcome
+- Textual parity is now aligned with runtime behavior for the identified non-blocking gaps.
+
+## 2026-03-06 12:08:00 -05:00 - Iteration 18 - Local Path Migration and Repo Rename
+
+### Decisions
+1. Adopted `C:\Users\jorda\dev\personal_projects\fight-caves-RL` as the canonical local repository path.
+2. Renamed GitHub repository to `fight-caves-RL` to match local project naming.
+3. Updated active documentation references that would otherwise point to stale local paths or old repo naming.
+
+### Changes Made
+1. Updated `README.md` clone/badge references to `fight-caves-RL`.
+2. Updated active plan/spec/release notes for completed local path migration:
+   - `plan.md`
+   - `spec.md`
+   - `docs/release_candidate.md`
+3. Removed stale absolute OneDrive path reference in `docs/baseline.md`.
+4. Renamed GitHub repository via CLI:
+   - `gh repo rename fight-caves-RL --repo jordanbailey00/fight-caves-rsps --yes`
+
+### Outcome
+- Naming/path references now align with the current local and GitHub repository identity.

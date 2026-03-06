@@ -1,7 +1,7 @@
 [manifest]
 name = "fight-caves-headless"
 version = "0.1.0"
-status = "step4-script-locked"
+status = "step13-physically-pruned"
 source_repo = "Void RSPS v2.5.0"
 spec = "spec.md"
 plan = "plan.md"
@@ -15,8 +15,9 @@ rotation_count = 15
 [modules]
 required = ["game", "engine", "cache", "types", "buffer", "config"]
 oracle_only = ["network"]
-optional = ["database"]
-excluded = ["tools"]
+optional = []
+excluded = []
+removed_in_step13 = ["database", "tools"]
 
 [tick_pipeline]
 required = [
@@ -38,7 +39,8 @@ headless_candidate_excluded = [
   "SaveLogs",
   "BotManager",
   "Hunting",
-  "GrandExchange"
+  "GrandExchange",
+  "FloorItems"
 ]
 
 [code_paths]
@@ -138,6 +140,8 @@ required = [
   "data/minigame/tai_bwo_wannai_cleanup/tai_bwo_wannai_cleanup.items.toml",
   "data/skill/fishing/fish.items.toml",
   "data/skill/herblore/potion.items.toml",
+  "data/entity/player/inventory/inventory.invs.toml",
+  "data/entity/player/equipment/worn_equipment.invs.toml",
   "data/entity/player/combat/weapon_animations.toml",
   "data/entity/player/combat/combat_styles/weapon_styles.toml",
   "data/entity/player/combat/combat_styles/combat_style.varps.toml",
@@ -232,6 +236,7 @@ required = [
   "definitions.combatAttacks",
   "definitions.prayers",
   "definitions.items",
+  "definitions.inventories",
   "definitions.objects",
   "definitions.variables.players",
   "definitions.variables.bits",
@@ -254,6 +259,12 @@ next_checks = [
   "headless startup fails if disallowed config file loaded",
   "headless script registry matches required_classes"
 ]
+
+
+
+
+
+
 
 
 

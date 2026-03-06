@@ -25,6 +25,8 @@ internal fun headlessTestOverrides(): Map<String, String> =
         "events.shootingStars.enabled" to "false",
         "events.penguinHideAndSeek.enabled" to "false",
         "bots.count" to "0",
+        "world.npcs.randomWalk" to "false",
+        "storage.disabled" to "true",
         "headless.data.allowlist.path" to "config/headless_data_allowlist.toml",
         "headless.scripts.allowlist.path" to "config/headless_scripts.txt",
         "headless.manifest.path" to "config/headless_manifest.toml",
@@ -43,3 +45,4 @@ internal fun resetHeadlessTestRuntime() {
     Settings.clear()
     stopKoin()
 }
+

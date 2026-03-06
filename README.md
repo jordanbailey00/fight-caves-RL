@@ -5,8 +5,8 @@
 <h1 align="center">Fight Caves RL</h1>
 
 <p align="center">
-  <a href="https://github.com/jordanbailey00/fight-caves-rsps/actions/workflows/test-with-coverage.yml"><img alt="CI" src="https://github.com/jordanbailey00/fight-caves-rsps/actions/workflows/test-with-coverage.yml/badge.svg"></a>
-  <a href="https://github.com/jordanbailey00/fight-caves-rsps/actions/workflows/create_release.yml"><img alt="Release" src="https://github.com/jordanbailey00/fight-caves-rsps/actions/workflows/create_release.yml/badge.svg"></a>
+  <a href="https://github.com/jordanbailey00/fight-caves-RL/actions/workflows/test-with-coverage.yml"><img alt="CI" src="https://github.com/jordanbailey00/fight-caves-RL/actions/workflows/test-with-coverage.yml/badge.svg"></a>
+  <a href="https://github.com/jordanbailey00/fight-caves-RL/actions/workflows/create_release.yml"><img alt="Release" src="https://github.com/jordanbailey00/fight-caves-RL/actions/workflows/create_release.yml/badge.svg"></a>
   <img alt="Java" src="https://img.shields.io/badge/Java-21+-orange?logo=openjdk">
   <img alt="Kotlin" src="https://img.shields.io/badge/Kotlin-2.2-blue?logo=kotlin">
   <img alt="Engine" src="https://img.shields.io/badge/Headless%20Sim-1%3A1%20Parity-success">
@@ -42,8 +42,8 @@ The acceptance target is strict: train in headless mode, deploy learned policy i
 1. Clone the repository.
 
 ```bash
-git clone https://github.com/jordanbailey00/fight-caves-rsps.git
-cd fight-caves-rsps
+git clone https://github.com/jordanbailey00/fight-caves-RL.git
+cd fight-caves-RL
 ```
 
 2. Install dependencies (JDK 21+, Git, and Python 3.11+ for RL tooling).
@@ -136,3 +136,4 @@ sudo apt install -y git openjdk-21-jdk python3.11 python3.11-venv
 ## License
 
 This project is licensed under the MIT License.
+

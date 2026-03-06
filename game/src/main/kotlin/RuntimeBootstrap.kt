@@ -1,4 +1,4 @@
-﻿import com.github.michaelbull.logging.InlineLogger
+import com.github.michaelbull.logging.InlineLogger
 import content.entity.obj.ObjectTeleports
 import org.koin.core.context.startKoin
 import org.koin.core.context.stopKoin
@@ -34,9 +34,23 @@ enum class RuntimeMode(val id: String) {
 
 fun currentRuntimeMode(): String = Settings[RUNTIME_MODE_KEY, RuntimeMode.Headed.id]
 
+private val headlessPrunedDefaults: Map<String, String> =
+    mapOf(
+        "bots.count" to "0",
+        "events.shootingStars.enabled" to "false",
+        "events.penguinHideAndSeek.enabled" to "false",
+        "storage.autoSave.minutes" to "0",
+        "spawns.npcs" to "tzhaar_city.npc-spawns.toml",
+        "spawns.items" to "tzhaar_city.items.toml",
+        "spawns.objects" to "tzhaar_city.objs.toml",
+    )
+
 fun loadRuntimeSettings(runtimeMode: RuntimeMode, overrides: Map<String, String> = emptyMap()): Properties = timed("properties") {
     val properties = Settings.load()
     properties.putAll(System.getenv())
+    if (runtimeMode == RuntimeMode.Headless) {
+        properties.putAll(headlessPrunedDefaults)
+    }
     properties.putAll(overrides)
     properties[RUNTIME_MODE_KEY] = runtimeMode.id
     properties
@@ -168,13 +182,14 @@ fun cacheModule(cache: Cache, files: ConfigFiles): Module {
             }
             single(createdAtStart = true) {
                 if (headless) {
-                    DropTables()
+                    DropTables().load(emptyList())
                 } else {
                     get<ItemDefinitions>()
-                    DropTables().load(files.list(Settings["spawns.drops"]))
+                    DropTables().load(emptyList()).load(files.list(Settings["spawns.drops"]))
                 }
             }
             single(createdAtStart = true) { ObjectTeleports().load(files.list(Settings["map.teleports"])) }
         }
     return module
 }
+
