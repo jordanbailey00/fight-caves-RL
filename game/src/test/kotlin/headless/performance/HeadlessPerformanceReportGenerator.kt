@@ -95,7 +95,7 @@ object HeadlessPerformanceReportGenerator {
     private fun locateRepositoryRoot(): Path {
         var current = Path.of("").toAbsolutePath().normalize()
         while (true) {
-            if (Files.isRegularFile(current.resolve("spec.md")) && Files.isDirectory(current.resolve("docs"))) {
+            if (Files.isRegularFile(current.resolve("FCspec.md")) && Files.isDirectory(current.resolve("docs"))) {
                 return current
             }
             current = current.parent ?: break

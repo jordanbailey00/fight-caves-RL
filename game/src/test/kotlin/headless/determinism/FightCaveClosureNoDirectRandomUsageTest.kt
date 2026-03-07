@@ -37,7 +37,7 @@ internal class FightCaveClosureNoDirectRandomUsageTest {
     private fun repositoryRoot(): Path {
         var current = Paths.get("").toAbsolutePath().normalize()
         while (true) {
-            if (Files.isRegularFile(current.resolve("spec.md")) && Files.isRegularFile(current.resolve("config/headless_manifest.toml"))) {
+            if (Files.isRegularFile(current.resolve("FCspec.md")) && Files.isRegularFile(current.resolve("config/headless_manifest.toml"))) {
                 return current
             }
             current = current.parent ?: break

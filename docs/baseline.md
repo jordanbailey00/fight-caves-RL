@@ -7,7 +7,7 @@ Status: COMPLETE
 
 ## Scope
 
-Executed Step 0 from plan.md:
+Executed Step 0 from FCplan.md:
 1. Stabilize compile blockers without gameplay behavior changes.
 2. Run baseline test targets.
 3. Record environment prerequisites and baseline test outcomes.

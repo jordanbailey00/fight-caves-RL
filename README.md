@@ -125,8 +125,8 @@ sudo apt install -y git openjdk-21-jdk python3.11 python3.11-venv
 
 ## Project Layout
 
-- `spec.md`: extraction and parity contract.
-- `plan.md`: implementation and validation execution plan.
+- `FCspec.md`: extraction and parity contract.
+- `FCplan.md`: implementation and validation execution plan.
 - `e2e test.md`: full end-to-end acceptance test matrix.
 - `docs/`: extraction manifest, runtime docs, and change log.
 - `config/`: headless manifests and allowlists.

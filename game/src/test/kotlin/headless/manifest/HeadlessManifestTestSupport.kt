@@ -94,7 +94,7 @@ internal object HeadlessManifestLoader {
         var current = Paths.get("").toAbsolutePath().normalize()
         while (true) {
             val manifest = current.resolve("config/headless_manifest.toml")
-            val spec = current.resolve("spec.md")
+            val spec = current.resolve("FCspec.md")
             if (Files.isRegularFile(manifest) && Files.isRegularFile(spec)) {
                 return current
             }

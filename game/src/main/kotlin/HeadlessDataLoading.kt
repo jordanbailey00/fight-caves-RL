@@ -134,7 +134,7 @@ private fun validateRequiredSettings(requiredSettings: List<String>, files: List
 internal fun locateRepositoryRoot(): Path {
     var current = Paths.get("").toAbsolutePath().normalize()
     while (true) {
-        if (Files.isRegularFile(current.resolve("spec.md")) && Files.isDirectory(current.resolve("data"))) {
+        if (Files.isRegularFile(current.resolve("FCspec.md")) && Files.isDirectory(current.resolve("data"))) {
             return current
         }
         current = current.parent ?: break

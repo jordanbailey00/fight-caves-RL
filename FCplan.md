@@ -1,4 +1,4 @@
-# plan.md - Void Fight Caves Headless Extraction and 1:1 Parity Execution Plan
+# FCplan.md - Void Fight Caves Headless Extraction and 1:1 Parity Execution Plan
 
 This plan is implementation-facing and must be executed in order.
 
@@ -37,7 +37,7 @@ Use this section to track each execution iteration and reduce implementation dri
 
 - [x] Retried local folder rename from parent directory after stopping Gradle daemons.
 - [x] Local folder rename explicitly deferred by owner; directory is open in VSCode and manual rename will be done later.
-- [x] Updated `plan.md`, `spec.md`, and `docs/changelog.md` to reflect completed vs remaining work at this stopping point.
+- [x] Updated `FCplan.md`, `FCspec.md`, and `docs/changelog.md` to reflect completed vs remaining work at this stopping point.
 - [x] Confirmed Step 2 is the next execution target for tomorrow.
 
 ### Iteration 05 - Step 2 Headless Bootstrap Path (2026-03-05)
@@ -341,17 +341,17 @@ Rules:
 - Do not skip steps.
 - Do not mark a step complete unless all listed tests pass.
 - If a test fails, fix root cause before continuing.
-- If code behavior conflicts with `spec.md`, update code to match spec or update spec with evidence from current authoritative Void behavior.
+- If code behavior conflicts with `FCspec.md`, update code to match spec or update spec with evidence from current authoritative Void behavior.
 
 Traceability rule:
-- Every PR/change set must reference the relevant `spec.md` sections by number.
+- Every PR/change set must reference the relevant `FCspec.md` sections by number.
 
 ---
 
 ## Step 0 - Baseline Stabilization and Freeze
 
 Spec linkage:
-- `spec.md` sections 1, 2, 10
+- `FCspec.md` sections 1, 2, 10
 
 Required action items:
 1. Fix current compile blockers in the existing repo without changing gameplay semantics.
@@ -377,7 +377,7 @@ Exit criteria:
 ## Step 1 - Define and Lock Extraction Manifest
 
 Spec linkage:
-- `spec.md` sections 3, 4, 6
+- `FCspec.md` sections 3, 4, 6
 
 Required action items:
 1. Create an explicit keep/cut manifest covering code modules, scripts, and data files.
@@ -407,7 +407,7 @@ Exit criteria:
 ## Step 2 - Headless Bootstrap Path (No Networking)
 
 Spec linkage:
-- `spec.md` sections 2.2, 6, 10
+- `FCspec.md` sections 2.2, 6, 10
 
 Required action items:
 1. Add dedicated headless entrypoint and service wiring (Koin/module setup).
@@ -432,7 +432,7 @@ Exit criteria:
 ## Step 3 - Fight Caves-Only Data Loading
 
 Spec linkage:
-- `spec.md` sections 3, 4, 6
+- `FCspec.md` sections 3, 4, 6
 
 Required action items:
 1. Implement headless data loader using an explicit allowlist (no full `dirs.txt` sweep).
@@ -457,7 +457,7 @@ Exit criteria:
 ## Step 4 - Script Allowlist and Content Loading
 
 Spec linkage:
-- `spec.md` sections 3, 6
+- `FCspec.md` sections 3, 6
 
 Required action items:
 1. Add headless script manifest (Fight Caves closure scripts only).
@@ -482,7 +482,7 @@ Exit criteria:
 ## Step 5 - Episode Initialization Contract Implementation
 
 Spec linkage:
-- `spec.md` sections 3, 4, 5.3
+- `FCspec.md` sections 3, 4, 5.3
 
 Required action items:
 1. Implement deterministic episode reset function for headless API.
@@ -508,7 +508,7 @@ Exit criteria:
 ## Step 6 - Action Adapter (One Intent Per Tick)
 
 Spec linkage:
-- `spec.md` section 5.1
+- `FCspec.md` section 5.1
 
 Required action items:
 1. Define stable action enum/id mapping.
@@ -536,7 +536,7 @@ Exit criteria:
 ## Step 7 - Observation Builder Contract
 
 Spec linkage:
-- `spec.md` section 5.2
+- `FCspec.md` section 5.2
 
 Required action items:
 1. Build observation schema with strict field definitions and stable ordering.
@@ -563,7 +563,7 @@ Exit criteria:
 ## Step 8 - Determinism Hardening and RNG Governance
 
 Spec linkage:
-- `spec.md` sections 2.1, 7
+- `FCspec.md` sections 2.1, 7
 
 Required action items:
 1. Ensure all Fight Caves closure randomness uses shared seeded RNG path.
@@ -589,7 +589,7 @@ Exit criteria:
 ## Step 9 - Oracle vs Headless Differential Parity Harness
 
 Spec linkage:
-- `spec.md` section 8
+- `FCspec.md` section 8
 
 Required action items:
 1. Build side-by-side runner for oracle (full runtime path) and headless path.
@@ -616,7 +616,7 @@ Exit criteria:
 ## Step 10 - Runtime Pruning and Packaging
 
 Spec linkage:
-- `spec.md` section 6
+- `FCspec.md` section 6
 
 Required action items:
 1. Remove excluded runtime systems from headless package path.
@@ -644,7 +644,7 @@ Exit criteria:
 ## Step 11 - Performance Validation (Post-Parity Only)
 
 Spec linkage:
-- `spec.md` section 9
+- `FCspec.md` section 9
 
 Required action items:
 1. Profile hot paths (tick loop, combat, pathing, observation serialization).
@@ -669,7 +669,7 @@ Exit criteria:
 ## Step 12 - Final Acceptance and Release Gate
 
 Spec linkage:
-- `spec.md` section 10
+- `FCspec.md` section 10
 
 Required action items:
 1. Run full end-to-end suite defined in `e2e test.md`.
@@ -692,7 +692,7 @@ Exit criteria:
 ## Step 13 - Physical Repository Prune (Hard Delete Pass)
 
 Spec linkage:
-- `spec.md` sections 6, 10
+- `FCspec.md` sections 6, 10
 
 Required action items:
 1. Freeze a recovery point before deletion (`git tag` + branch) so removed files can be recovered if needed.

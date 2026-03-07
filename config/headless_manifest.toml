@@ -3,8 +3,8 @@ name = "fight-caves-headless"
 version = "0.1.0"
 status = "step13-physically-pruned"
 source_repo = "Void RSPS v2.5.0"
-spec = "spec.md"
-plan = "plan.md"
+spec = "FCspec.md"
+plan = "FCplan.md"
 
 [scope]
 goal = "Headless Fight Caves simulator with 1:1 parity to oracle Void runtime"

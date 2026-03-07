@@ -1,6 +1,6 @@
 ﻿# e2e test.md - Final End-to-End Validation for Void Fight Caves Headless 1:1 Parity
 
-Run this suite only after all `plan.md` steps are complete.
+Run this suite only after all `FCplan.md` steps are complete.
 
 This is the final gate for acceptance.
 
@@ -9,8 +9,8 @@ This is the final gate for acceptance.
 ## 0) Global Preconditions
 
 All must be true before running E2E:
-1. `spec.md` is current and approved.
-2. `plan.md` steps 0-12 are marked complete.
+1. `FCspec.md` is current and approved.
+2. `FCplan.md` steps 0-12 are marked complete.
 3. Headless and oracle runtimes build successfully.
 4. Required deterministic trace pack exists.
 5. CI and local environment use identical code revision.
@@ -263,8 +263,8 @@ Automatic fail conditions:
 
 ## 4) Final Sign-Off Checklist
 
-1. `spec.md` acceptance criteria confirmed.
-2. `plan.md` all step exit criteria confirmed.
+1. `FCspec.md` acceptance criteria confirmed.
+2. `FCplan.md` all step exit criteria confirmed.
 3. E2E suite pass report approved.
 4. Release candidate commit tagged.
 5. Future RL work unblocked.
