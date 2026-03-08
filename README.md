@@ -120,8 +120,10 @@ sudo apt install -y git openjdk-21-jdk python3.11 python3.11-venv
 ### Build Distribution Artifact
 
 ```bash
-./gradlew :game:bundleDistZip
+./gradlew :game:headlessDistZip
 ```
+
+Use `./gradlew :game:packageHeadless` when you want the documented validation/aggregator path that also regenerates deletion-candidate artifacts.
 
 ## Project Layout
 
@@ -136,4 +138,3 @@ sudo apt install -y git openjdk-21-jdk python3.11 python3.11-venv
 ## License
 
 This project is licensed under the MIT License.
-

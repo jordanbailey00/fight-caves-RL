@@ -34,7 +34,7 @@ Run in order (adapt task names to implemented build tasks):
 3. `./gradlew :game:test --tests "*Headless*"`
 4. `./gradlew :game:test --tests "*Parity*"`
 5. `./gradlew :game:test --tests "content.area.karamja.tzhaar_city.TzhaarFightCaveTest"`
-6. `./gradlew :game:headlessDist` (or equivalent headless artifact task)
+6. `./gradlew :game:headlessDistZip`
 7. `./gradlew :game:e2eTest` (if dedicated task exists)
 
 If any command fails, stop and resolve before proceeding.

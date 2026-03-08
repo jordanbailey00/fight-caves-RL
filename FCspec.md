@@ -13,6 +13,18 @@ Primary acceptance target:
 
 ## 1) Repository Reality (Void, not Elvarg)
 
+### 1.1 Workspace identity vs inherited release automation
+
+Within this workspace, this module's canonical identity is **`fight-caves-RL`** and its source-of-truth files are `FCspec.md` / `FCplan.md`.
+
+The current `.github/workflows/create_release.yml` file remains inherited from the upstream Void fork.
+It is **not** the source of truth for:
+- headless artifact naming
+- headless packaging tasks
+- simulator contract wording
+
+Until explicitly normalized, treat that workflow as inherited release automation rather than as the authoritative statement of this module's runtime/package identity.
+
 Authoritative implementation sources:
 - `game/src/main/kotlin/content/area/karamja/tzhaar_city/TzhaarFightCave.kt`
 - `game/src/main/kotlin/content/area/karamja/tzhaar_city/TzhaarFightCaveWaves.kt`
@@ -181,25 +193,33 @@ Set at episode reset:
 - Ranged: 70
 - Prayer: 43
 - Magic: 1
+- All other skills: 1
 
 Derived start resources:
 - HP: full (70 display HP; internal value `700`)
 - Prayer points: full (43)
 - Run energy: 100%
-- Run toggle: ON by default unless parity tests require different default
+- Run toggle: ON
 
 No XP gain in headless training episodes.
+
+Episode reset input defaults:
+- `startWave = 1`
+- `ammo = 1000`
+- `prayerPotions = 8`
+- `sharks = 20`
 
 ### 4.2 Equipment allowlist
 
 Required starting equipment:
 - Rune crossbow
-- Adamant bolts
+- Adamant bolts x ammo (default `1000`)
 - Coif
 - Black dragonhide body
 - Black dragonhide chaps
 - Black dragonhide vambraces
 - Snakeskin boots
+- No neck item is part of the current canonical episode-start loadout
 
 ### 4.3 Inventory allowlist
 
@@ -564,7 +584,6 @@ Execution closeout notes:
 
 Environment clarification:
 - Project/test bytecode target is Java 21; run verification tests under a Java 21 runtime.
-
 
 
 
