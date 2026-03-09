@@ -1,5 +1,18 @@
 # changelog.md
 
+## 2026-03-09
+
+- Added a sim-side performance audit report in:
+  - `docs/sim_profiler_report.md`
+- Recorded the current audit outcome for JVM profiling:
+  - the repo still has a real direct-JVM throughput artifact in `docs/performance_report.md` at about `8.9k` ticks/sec
+  - the current WSL host passes `HeadlessStepRateBenchmarkTest`
+  - embedded-JVM JFR dump attempts launched from the RL Python benchmark did not dump cleanly on exit
+  - Gradle/JUnit JFR capture succeeded but was dominated by Gradle / JUnit / JaCoCo harness noise and did not yield clean headless-symbol CPU samples
+  - `jcmd -l` did not expose the embedded JPype JVM as an attachable target during the RL bridge benchmark
+- Documented the profiler limitation explicitly instead of claiming function-level JVM hotspots without clean samples.
+- Expanded the sim profiler report with the exact JFR commands, runtime/JVM details, and benchmark-scenario metadata used in this audit pass.
+
 ## 2026-03-08
 
 - Tightened the root `FCspec.md` episode-start contract so the primary module spec now matches the already-documented headless reset contract:
