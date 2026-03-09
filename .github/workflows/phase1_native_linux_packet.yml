@@ -330,16 +330,19 @@ jobs:
               ["git", "clone", f"https://x-access-token:{os.environ['GITHUB_TOKEN']}@github.com/{repo}.git", str(archive)],
               check=True,
           )
-          subprocess.run(["git", "-C", str(archive), "checkout", "--orphan", branch], check=False)
-          subprocess.run(["git", "-C", str(archive), "fetch", "origin", branch], check=False)
-          checkout = subprocess.run(
-              ["git", "-C", str(archive), "checkout", branch],
+          branch_exists = subprocess.run(
+              ["git", "-C", str(archive), "ls-remote", "--exit-code", "--heads", "origin", branch],
               check=False,
               capture_output=True,
               text=True,
-          )
-          if checkout.returncode != 0:
+          ).returncode == 0
+          if branch_exists:
+              subprocess.run(["git", "-C", str(archive), "fetch", "origin", branch], check=True)
+              subprocess.run(["git", "-C", str(archive), "checkout", branch], check=True)
+          else:
               subprocess.run(["git", "-C", str(archive), "checkout", "--orphan", branch], check=True)
+              subprocess.run(["git", "-C", str(archive), "rm", "-rf", "."], check=False)
+              subprocess.run(["git", "-C", str(archive), "clean", "-fdx"], check=True)
 
           target_root = archive / "phase1-native-linux" / "latest"
           if target_root.exists():
