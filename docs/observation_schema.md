@@ -80,6 +80,18 @@ Each entry includes:
 - `hidden`
 - `dead`
 - `under_attack`
+- `jad_telegraph_state`
+
+`jad_telegraph_state` meaning:
+
+- `0` = `idle`
+- `1` = `magic_windup`
+- `2` = `ranged_windup`
+
+Parity rule:
+- this field is a semantic rendering of the same authoritative Jad telegraph state that drives the headed animation cue
+- it is only non-zero during the real Jad telegraph window
+- it does not expose the correct prayer, countdowns, or any pre-telegraph future attack info
 
 Ordering source:
 - Shared visible-NPC mapping used by the Step 6 action adapter.

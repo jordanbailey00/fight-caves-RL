@@ -37,6 +37,35 @@ Append-only log of implementation changes and decisions.
 2. Current Jad attack definitions use animation/gfx/sound cues; there is no Jad-specific `say(...)` cue in the attack definition path.
 3. Prayer semantics remain downstream in the existing hit/damage path and were left unchanged.
 
+## 2026-03-09 17:25:00 -04:00 - Jad Telegraph JAD-03 and JAD-04
+
+### Decisions
+1. Kept the raw simulator observation on additive `headless_observation_v1`; the Jad cue is an additive NPC field, not a new raw schema generation.
+2. Exposed only the telegraph state to headless consumers:
+   - no direct correct-prayer field
+   - no countdown timer
+   - no pre-telegraph future-style leakage
+3. Reused the same authoritative telegraph state for replay/parity trace payloads instead of building a parallel trace-only inference path.
+
+### Changes Made
+1. Updated `game/src/main/kotlin/HeadlessObservationBuilder.kt`:
+   - added `HeadlessObservationNpc.jadTelegraphState`
+   - serialized field name `jad_telegraph_state`
+2. Added repo-owned telegraph trace projection in `game/src/main/kotlin/content/area/karamja/tzhaar_city/JadTelegraph.kt`:
+   - `JadTelegraphTrace`
+   - stable serialized state/style names
+3. Updated replay/parity snapshot paths:
+   - `game/src/main/kotlin/HeadlessReplayRunner.kt`
+   - `game/src/main/kotlin/ParityHarness.kt`
+4. Added focused regression coverage:
+   - `game/src/test/kotlin/headless/observation/ObservationJadTelegraphStateTest.kt`
+   - `game/src/test/kotlin/headless/determinism/HeadlessReplayJadTelegraphTraceTest.kt`
+   - `game/src/test/kotlin/headless/parity/ParityHarnessJadTelegraphParityTest.kt`
+
+### Outcome
+1. The headless observation now carries a learnable Jad cue with the same onset tick and meaning as the headed animation-driven cue.
+2. Replay and oracle-vs-headless parity snapshots now expose the same authoritative Jad telegraph timing for inspection.
+
 ## 2026-03-09 03:45:00 -04:00 - Active Phase 0 Doc Cleanup
 
 ### Decisions

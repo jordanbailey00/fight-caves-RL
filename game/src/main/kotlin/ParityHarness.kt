@@ -1,3 +1,5 @@
+import content.area.karamja.tzhaar_city.JadTelegraphTrace
+import content.area.karamja.tzhaar_city.jadTelegraphTraceOrNull
 import content.quest.instance
 import org.koin.core.context.stopKoin
 import world.gregs.voidps.engine.GameLoop
@@ -81,6 +83,7 @@ data class ParitySnapshot(
     val action: HeadlessAction?,
     val actionResult: HeadlessActionResult?,
     val observation: HeadlessObservationV1,
+    val jadTelegraph: JadTelegraphTrace?,
     val fightCaveNpcs: List<ParityNpcState>,
     val combatState: ParityCombatState,
     val rngCallCount: Long,
@@ -102,6 +105,7 @@ data class ParitySnapshot(
                     "metadata" to (actionResult?.metadata?.filterKeys { it != "target_npc_index" }?.toSortedMap() ?: sortedMapOf<String, String>()),
                 ),
             "observation" to LinkedHashMap(coreObservation),
+            "jad_telegraph" to jadTelegraph?.toOrderedMap(),
             "fight_cave_npcs" to fightCaveNpcs.map { it.toOrderedMap() },
             "combat_state" to combatState.toOrderedMap(),
         )
@@ -311,7 +315,9 @@ class ParityHarness(
         val allFightCaveNpcs =
             fightCaveNpcs(player)
                 .sortedWith(compareBy<NPC>({ it.tile.level }, { it.tile.x }, { it.tile.y }, { it.id }))
-                .map { npc ->
+        val jadTelegraph = allFightCaveNpcs.firstNotNullOfOrNull { it.jadTelegraphTraceOrNull() }
+        val allFightCaveNpcStates =
+            allFightCaveNpcs.map { npc ->
                     val hp = npc.levels.get(Skill.Constitution)
                     val max = npc.levels.getMax(Skill.Constitution)
                     ParityNpcState(
@@ -331,7 +337,8 @@ class ParityHarness(
             action = action,
             actionResult = actionResult,
             observation = observation,
-            fightCaveNpcs = allFightCaveNpcs,
+            jadTelegraph = jadTelegraph,
+            fightCaveNpcs = allFightCaveNpcStates,
             combatState =
                 ParityCombatState(
                     actionDelay = player.hasClock("action_delay"),
@@ -513,7 +520,6 @@ class ParityHarness(
             )
     }
 }
-
 
 
 

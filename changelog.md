@@ -2,6 +2,26 @@
 
 ## 2026-03-09
 
+- Completed the next Jad telegraph parity slices:
+  - `JAD-03` headless observation exposure
+  - `JAD-04` replay/parity trace wiring
+- Exposed the authoritative Jad telegraph as an additive raw observation field:
+  - `HeadlessObservationNpc.jadTelegraphState`
+  - serialized as `jad_telegraph_state`
+  - values:
+    - `0 = idle`
+    - `1 = magic_windup`
+    - `2 = ranged_windup`
+- Kept the raw sim schema on additive `headless_observation_v1` instead of creating a new sim schema version.
+- Added replay/parity trace views sourced from the same authoritative Jad telegraph state:
+  - `JadTelegraphTrace`
+  - `HeadlessReplayTickSnapshot.jadTelegraph`
+  - `ParitySnapshot.jadTelegraph`
+- Added focused Jad telegraph coverage for:
+  - headless observation exposure
+  - replay trace capture
+  - oracle-vs-headless parity trace alignment
+
 - Started the Jad telegraph parity rework and completed the first two scoped chunks:
   - `JAD-01` current timing freeze and integration-point audit
   - `JAD-02` authoritative Jad telegraph state in the shared combat path

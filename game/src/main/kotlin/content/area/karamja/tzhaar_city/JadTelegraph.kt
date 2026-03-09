@@ -17,6 +17,25 @@ enum class JadCommittedAttackStyle(val attackId: String) {
     Ranged("range"),
 }
 
+data class JadTelegraphTrace(
+    val attackSequence: Int,
+    val committedAttackStyle: String,
+    val telegraphState: String,
+    val telegraphStateCode: Int,
+    val telegraphStartTick: Int,
+    val hitResolveTick: Int,
+) {
+    fun toOrderedMap(): LinkedHashMap<String, Any> =
+        linkedMapOf(
+            "attack_sequence" to attackSequence,
+            "committed_attack_style" to committedAttackStyle,
+            "telegraph_state" to telegraphState,
+            "telegraph_state_code" to telegraphStateCode,
+            "telegraph_start_tick" to telegraphStartTick,
+            "hit_resolve_tick" to hitResolveTick,
+        )
+}
+
 const val JAD_HIT_TARGET_QUEUE_TICKS = 3
 const val JAD_HIT_CLIENT_DELAY = 64
 
@@ -42,6 +61,20 @@ fun jadTelegraphStateForStyle(style: JadCommittedAttackStyle): JadTelegraphState
         JadCommittedAttackStyle.Magic -> JadTelegraphState.MagicWindup
         JadCommittedAttackStyle.Ranged -> JadTelegraphState.RangedWindup
         JadCommittedAttackStyle.None -> JadTelegraphState.Idle
+    }
+
+fun JadTelegraphState.serializedName(): String =
+    when (this) {
+        JadTelegraphState.Idle -> "idle"
+        JadTelegraphState.MagicWindup -> "magic_windup"
+        JadTelegraphState.RangedWindup -> "ranged_windup"
+    }
+
+fun JadCommittedAttackStyle.serializedName(): String =
+    when (this) {
+        JadCommittedAttackStyle.None -> "none"
+        JadCommittedAttackStyle.Magic -> "magic"
+        JadCommittedAttackStyle.Ranged -> "range"
     }
 
 var NPC.jadTelegraphState: JadTelegraphState
@@ -95,3 +128,16 @@ fun NPC.clearJadTelegraph() {
     jadHitResolveTick = -1
 }
 
+fun NPC.jadTelegraphTraceOrNull(): JadTelegraphTrace? {
+    if (id != "tztok_jad") {
+        return null
+    }
+    return JadTelegraphTrace(
+        attackSequence = jadAttackSequence,
+        committedAttackStyle = jadCommittedAttackStyle.serializedName(),
+        telegraphState = jadTelegraphState.serializedName(),
+        telegraphStateCode = jadTelegraphState.encoded,
+        telegraphStartTick = jadTelegraphStartTick,
+        hitResolveTick = jadHitResolveTick,
+    )
+}

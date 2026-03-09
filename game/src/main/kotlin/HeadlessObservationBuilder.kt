@@ -1,3 +1,5 @@
+import content.area.karamja.tzhaar_city.JadTelegraphState
+import content.area.karamja.tzhaar_city.jadTelegraphState
 import content.entity.player.effect.energy.MAX_RUN_ENERGY
 import content.entity.player.effect.energy.runEnergy
 import content.skill.prayer.getActivePrayerVarKey
@@ -144,6 +146,7 @@ data class HeadlessObservationNpc(
     val hidden: Boolean,
     val dead: Boolean,
     val underAttack: Boolean,
+    val jadTelegraphState: Int,
 ) {
     fun toOrderedMap(): LinkedHashMap<String, Any> =
         linkedMapOf(
@@ -156,6 +159,7 @@ data class HeadlessObservationNpc(
             "hidden" to hidden,
             "dead" to dead,
             "under_attack" to underAttack,
+            "jad_telegraph_state" to jadTelegraphState,
         )
 }
 
@@ -247,6 +251,12 @@ class HeadlessObservationBuilder(
                         hidden = npc.hide,
                         dead = npc.contains("dead") || hitpointsCurrent <= 0,
                         underAttack = npc.hasClock("under_attack"),
+                        jadTelegraphState =
+                            if (target.id == "tztok_jad") {
+                                npc.jadTelegraphState.encoded
+                            } else {
+                                JadTelegraphState.Idle.encoded
+                            },
                     )
                 }
 
