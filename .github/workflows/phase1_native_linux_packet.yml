@@ -199,6 +199,7 @@ jobs:
           PACKET_META: ${{ runner.temp }}/phase1_packet_meta.json
         run: |
           set +e
+          # The RL packet script resolves benchmark config paths from the RL repo root.
           uv run --project _workspace/RL python _workspace/RL/scripts/refresh_phase1_packet.py \
             --output-dir "${RUNNER_TEMP}/fc_phase1_packet_linux" \
             --phase0-baseline-dir "${RUNNER_TEMP}/phase0_baseline" \
