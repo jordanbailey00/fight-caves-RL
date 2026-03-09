@@ -4,7 +4,7 @@
     "16": "/home/runner/work/_temp/fc_phase0_packet_linux/bridge_16env.json",
     "64": "/home/runner/work/_temp/fc_phase0_packet_linux/bridge_64env.json"
   },
-  "created_at": "2026-03-09T07:35:36.203904+00:00",
+  "created_at": "2026-03-09T23:11:15.398375+00:00",
   "gate_status": {
     "benchmark_host_class": "linux_native",
     "blockers": [],
@@ -12,7 +12,7 @@
     "clean_batched_headless_artifact_present": true,
     "clean_pure_jvm_artifact_present": true,
     "native_linux_source_of_truth": true,
-    "per_worker_sim_env_steps_per_second": 424396.0431514491,
+    "per_worker_sim_env_steps_per_second": 444907.1911781355,
     "performance_source_of_truth": true,
     "phase1_unblocked": true,
     "train_rows_complete": true,
