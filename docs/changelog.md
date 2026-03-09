@@ -31,6 +31,38 @@ Append-only log of implementation changes and decisions.
   - hosted `ubuntu-latest` path cannot yet provision the required game cache
 - Phase 1 remains blocked
 
+## 2026-03-09 02:55:00 -04:00 - Phase 0 Hosted Linux Bootstrap Hardening
+
+### Decisions
+1. Kept the hosted native-Linux Phase 0 path active as the fallback when the self-hosted Linux runner is unavailable.
+2. Used repo-owned Git branches, not hidden credentials, to unblock hosted cache bootstrap and result visibility:
+   - `codex/cache-bootstrap` hosts the cache archive parts and manifest
+   - `codex/phase0-results` hosts published run summaries and packets
+3. Kept all of this work in Phase 0 measurement infrastructure only; no simulator semantics changed.
+
+### Changes Made
+1. Added the temporary cache bootstrap artifact branch:
+   - `codex/cache-bootstrap`
+   - contains `.github/cache-bootstrap/manifest.json`
+   - contains split archive parts for the validated local `data/cache/`
+2. Added the Phase 0 results publication branch:
+   - `codex/phase0-results`
+   - initialized with `phase0-native-linux/README.md`
+3. Hardened `.github/workflows/phase0_native_linux_packet.yml`:
+   - shallow checkout for the main repo to avoid full-history cost from the artifact branches
+   - bootstrap from `codex/cache-bootstrap` when restored cache is missing or empty
+   - publish `run_summary.json`, `gate_summary.json`, `phase0_packet.json`, or `error_summary.json` to `codex/phase0-results`
+
+### Verification
+1. Confirmed the hosted workflow now clears the cache gate on the latest rerun before entering the standalone sim report:
+   - `Bootstrap cache from artifact branch`: success
+   - `Verify cache files exist`: success
+   - `Sync RL dependencies`: success
+
+### Current Status
+- The hosted native-Linux path is no longer blocked on cache provisioning or result visibility.
+- The remaining live gate is completion of the standalone sim report / full packet run on the hosted native-Linux runner.
+
 ## 2026-03-04 21:47:33 -05:00 - Step 0 Baseline Start
 
 ### Decisions
