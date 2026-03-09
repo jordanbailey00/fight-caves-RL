@@ -194,10 +194,32 @@ jobs:
         env:
           FIGHT_CAVES_RL_REPO: ${{ github.workspace }}
           RSPS_REPO: ${{ github.workspace }}/_workspace/RSPS
+          PACKET_STDOUT: ${{ runner.temp }}/phase1_packet_stdout.log
+          PACKET_STDERR: ${{ runner.temp }}/phase1_packet_stderr.log
+          PACKET_META: ${{ runner.temp }}/phase1_packet_meta.json
         run: |
+          set +e
           uv run --project _workspace/RL python _workspace/RL/scripts/refresh_phase1_packet.py \
             --output-dir "${RUNNER_TEMP}/fc_phase1_packet_linux" \
-            --phase0-baseline-dir "${RUNNER_TEMP}/phase0_baseline"
+            --phase0-baseline-dir "${RUNNER_TEMP}/phase0_baseline" \
+            >"${PACKET_STDOUT}" 2>"${PACKET_STDERR}"
+          status=$?
+          PHASE1_PACKET_EXIT_CODE="$status" python3 - <<'PY'
+          import json
+          import os
+          from pathlib import Path
+
+          payload = {
+              "exit_code": int(os.environ["PHASE1_PACKET_EXIT_CODE"]),
+              "stdout_path": os.environ["PACKET_STDOUT"],
+              "stderr_path": os.environ["PACKET_STDERR"],
+          }
+          Path(os.environ["PACKET_META"]).write_text(
+              json.dumps(payload, indent=2, sort_keys=True) + "\n",
+              encoding="utf-8",
+          )
+          PY
+          exit $status
 
       - name: Summarize gate
         env:
@@ -248,6 +270,9 @@ jobs:
         env:
           PACKET_DIR: ${{ runner.temp }}/fc_phase1_packet_linux
           SUMMARY_JSON: ${{ runner.temp }}/fc_phase1_gate_summary.json
+          PACKET_STDOUT: ${{ runner.temp }}/phase1_packet_stdout.log
+          PACKET_STDERR: ${{ runner.temp }}/phase1_packet_stderr.log
+          PACKET_META: ${{ runner.temp }}/phase1_packet_meta.json
           RESULTS_BRANCH: codex/phase1-results
           GITHUB_TOKEN: ${{ github.token }}
         run: |
@@ -267,13 +292,35 @@ jobs:
               shutil.rmtree(latest)
           latest.mkdir(parents=True, exist_ok=True)
 
-          for source in packet_dir.glob("*"):
-              if source.is_dir():
-                  shutil.copytree(source, latest / source.name, dirs_exist_ok=True)
-              else:
-                  shutil.copy2(source, latest / source.name)
+          if packet_dir.is_dir():
+              for source in packet_dir.glob("*"):
+                  if source.is_dir():
+                      shutil.copytree(source, latest / source.name, dirs_exist_ok=True)
+                  else:
+                      shutil.copy2(source, latest / source.name)
           if summary_json.is_file():
               shutil.copy2(summary_json, latest / "gate_summary.json")
+          else:
+              packet_meta = Path(os.environ["PACKET_META"])
+              error_summary = {
+                  "repository": repo,
+                  "workflow_run_id": os.environ["GITHUB_RUN_ID"],
+                  "head_sha": os.environ["GITHUB_SHA"],
+                  "error": "phase1_packet_missing",
+              }
+              if packet_meta.is_file():
+                  error_summary["packet_meta"] = json.loads(packet_meta.read_text(encoding="utf-8"))
+              (latest / "error_summary.json").write_text(
+                  json.dumps(error_summary, indent=2, sort_keys=True) + "\n",
+                  encoding="utf-8",
+              )
+              for env_name, target_name in (
+                  ("PACKET_STDOUT", "phase1_packet_stdout.log"),
+                  ("PACKET_STDERR", "phase1_packet_stderr.log"),
+              ):
+                  source = Path(os.environ[env_name])
+                  if source.is_file():
+                      shutil.copy2(source, latest / target_name)
 
           archive = Path("/tmp") / "phase1_results_repo"
           if archive.exists():
