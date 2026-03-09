@@ -2,6 +2,23 @@
 
 Append-only log of implementation changes and decisions.
 
+## 2026-03-09 23:35:00 -04:00 - Phase 1 WC-P1-04 Equivalence Gate Design
+
+### Decisions
+1. Froze the raw-vs-flat certification gate as a sim-owned contract rather than leaving it implicit in later RL-side benchmark results.
+2. Required Jad telegraph equivalence to remain a first-class part of the raw-vs-flat proof rather than treating it as incidental observation content.
+3. Split responsibility cleanly:
+   - sim-side projection and semantic equivalence in `fight-caves-RL`
+   - consumer-side ingest equivalence and fail-fast checks in `RL`
+
+### Changes Made
+1. Added the new certification-gate source of truth:
+   - `docs/raw_flat_equivalence_plan.md`
+
+### Outcome
+1. `WC-P1-04` is complete at the planning/design level.
+2. Flat-path implementation can no longer claim success without explicit raw-vs-flat proof requirements.
+
 ## 2026-03-09 23:05:00 -04:00 - Phase 1 WC-P1-02 Flat Schema Design
 
 ### Decisions

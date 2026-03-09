@@ -2,6 +2,11 @@
 
 ## 2026-03-09
 
+- Completed `WC-P1-04` from the workspace optimization plan.
+- Added the sim-owned certification-gate source of truth:
+  - `docs/raw_flat_equivalence_plan.md`
+- Froze the rule that the future flat path is trusted only after source-side equivalence, RL-side consumer equivalence, determinism/parity reruns, and Jad telegraph equivalence all remain green.
+
 - Completed `WC-P1-02` from the workspace optimization plan.
 - Added the sim-owned flat-path design source of truth:
   - `docs/flat_training_observation_schema.md`
