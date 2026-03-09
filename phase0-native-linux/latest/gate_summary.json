@@ -1,0 +1,10 @@
+{
+  "benchmark_host_class": "linux_native",
+  "blockers": [],
+  "native_linux_source_of_truth": true,
+  "performance_source_of_truth": true,
+  "phase1_unblocked": true,
+  "sim_batched_env_steps_per_second": 404635.4122396497,
+  "sim_single_slot_ticks_per_second": 30532.579136697248,
+  "workers_needed_for_100k": 1
+}
