@@ -1,0 +1,125 @@
+import com.github.michaelbull.logging.InlineLogger
+import content.area.karamja.tzhaar_city.TzhaarFightCave
+import world.gregs.voidps.cache.Cache
+import world.gregs.voidps.engine.GameLoop
+import world.gregs.voidps.engine.Script
+import world.gregs.voidps.engine.data.ConfigFiles
+import world.gregs.voidps.engine.data.Settings
+import world.gregs.voidps.engine.data.configFiles
+import world.gregs.voidps.engine.entity.World
+import world.gregs.voidps.engine.entity.character.player.Player
+import world.gregs.voidps.engine.event.AuditLog
+import java.util.*
+
+data class OracleRuntime(
+    val settings: Properties,
+    val configFiles: ConfigFiles,
+    val loadedScriptClasses: Set<String>,
+    val loadedScripts: List<Script>,
+    val stages: List<Runnable>,
+    val gameLoop: GameLoop,
+    val episodeInitializer: FightCaveEpisodeInitializer?,
+    val actionAdapter: HeadlessActionAdapter?,
+    val observationBuilder: HeadlessObservationBuilder?,
+    val flatObservationBuilder: HeadlessFlatObservationBuilder?,
+) : FightCaveSimulationRuntime {
+
+    override fun tick(times: Int) {
+        repeat(times) {
+            GameLoop.tick++
+            gameLoop.tick()
+        }
+    }
+
+    override fun resetFightCaveEpisode(player: Player, config: FightCaveEpisodeConfig): FightCaveEpisodeState {
+        val initializer = checkNotNull(episodeInitializer) { "Fight cave episode initializer is unavailable; ensure oracle content scripts are loaded." }
+        return initializer.reset(player, config)
+    }
+
+    override fun resetFightCaveEpisode(player: Player, seed: Long, startWave: Int): FightCaveEpisodeState =
+        resetFightCaveEpisode(player, FightCaveEpisodeConfig(seed = seed, startWave = startWave))
+
+    override fun visibleFightCaveNpcTargets(player: Player): List<HeadlessVisibleNpcTarget> {
+        val adapter = checkNotNull(actionAdapter) { "Oracle action adapter is unavailable; ensure oracle content scripts are loaded." }
+        return adapter.visibleNpcTargets(player)
+    }
+
+    override fun applyFightCaveAction(player: Player, action: HeadlessAction): HeadlessActionResult {
+        val adapter = checkNotNull(actionAdapter) { "Oracle action adapter is unavailable; ensure oracle content scripts are loaded." }
+        return adapter.apply(player, action)
+    }
+
+    override fun observeFightCave(player: Player, includeFutureLeakage: Boolean): HeadlessObservationV1 {
+        val builder = checkNotNull(observationBuilder) { "Oracle observation builder is unavailable; ensure oracle content scripts are loaded." }
+        return builder.build(player, includeFutureLeakage)
+    }
+
+    override fun observeFightCaveFlat(player: Player): HeadlessTrainingFlatObservationV1 {
+        val builder = checkNotNull(flatObservationBuilder) { "Oracle flat observation builder is unavailable; ensure oracle content scripts are loaded." }
+        return builder.build(player)
+    }
+
+    override fun shutdown() {
+        World.clear()
+        org.koin.core.context.stopKoin()
+        Settings.clear()
+    }
+}
+
+object OracleMain {
+    private val logger = InlineLogger()
+
+    fun bootstrap(
+        loadContentScripts: Boolean = true,
+        startWorld: Boolean = true,
+        installShutdownHook: Boolean = true,
+        settingsOverrides: Map<String, String> = emptyMap(),
+    ): OracleRuntime {
+        AuditLog.info("startup")
+        val startTime = System.currentTimeMillis()
+        val settings = loadRuntimeSettings(RuntimeMode.Headed, settingsOverrides)
+        val configFiles = configFiles()
+
+        val cache = world.gregs.voidps.engine.timed("cache") { Cache.load(settings) }
+        val scripts =
+            preloadRuntime(
+                cache = cache,
+                configFiles = configFiles,
+                runtimeMode = RuntimeMode.Headed,
+                loadContentScripts = loadContentScripts,
+                installShutdownHook = installShutdownHook,
+                scriptAllowlist = null,
+            )
+
+        if (startWorld) {
+            World.start(configFiles)
+        }
+
+        val stages = getTickStages()
+        val loadedScriptClasses = scripts.map { it::class.qualifiedName ?: it::class.java.name }.toSet()
+        val fightCaveScript = scripts.filterIsInstance<TzhaarFightCave>().singleOrNull()
+        if (loadContentScripts) {
+            checkNotNull(fightCaveScript) { "Oracle runtime did not load TzhaarFightCave script required for parity initialization." }
+        }
+
+        val actionAdapter = if (loadContentScripts) HeadlessActionAdapter(scripts) else null
+        val runtime =
+            OracleRuntime(
+                settings = settings,
+                configFiles = configFiles,
+                loadedScriptClasses = loadedScriptClasses,
+                loadedScripts = scripts,
+                stages = stages,
+                gameLoop = GameLoop(stages),
+                episodeInitializer = fightCaveScript?.let { FightCaveEpisodeInitializer(it, configFiles) },
+                actionAdapter = actionAdapter,
+                observationBuilder = actionAdapter?.let(::HeadlessObservationBuilder),
+                flatObservationBuilder = actionAdapter?.let(::HeadlessFlatObservationBuilder),
+            )
+
+        logger.info {
+            "${Settings["server.name"]} loaded in ${System.currentTimeMillis() - startTime}ms (mode=${currentRuntimeMode()}, oracle_stages=${stages.size}, scripts=${loadedScriptClasses.size})"
+        }
+        return runtime
+    }
+}
