@@ -2,13 +2,13 @@
 
 Date: 2026-03-09
 
-This document defines the certification gate for proving that the future flat training observation path remains semantically anchored to the raw headless observation path.
+This document defines the certification gate for proving that the flat training observation path remains semantically anchored to the raw headless observation path.
 
 This is the source-of-truth deliverable for optimization `WC-P1-04`.
 
 ## Purpose
 
-The future flat training path is allowed to change representation, layout, batching, and transport behavior.
+The flat training path is allowed to change representation, layout, batching, and transport behavior.
 It is not allowed to change gameplay meaning.
 
 Certification Mode exists to prove that the flat path is a semantically equivalent projection of the same sim-owned state that drives the raw path.
@@ -56,7 +56,7 @@ Owner:
 
 Goal:
 
-- prove that the future flat emitter projects the same meaning as the raw observation builder from the same sim-owned state
+- prove that the flat emitter projects the same meaning as the raw observation builder from the same sim-owned state
 
 Required cases:
 
@@ -170,7 +170,7 @@ Required reruns after implementation:
 - replay-eval on a known checkpoint
 - any new flat-path consumer equivalence tests
 
-## Planned Test Surfaces
+## Implemented And Planned Test Surfaces
 
 ### Sim-Side
 
@@ -180,12 +180,15 @@ Likely test areas:
 - `game/src/test/kotlin/headless/determinism`
 - `game/src/test/kotlin/headless/parity`
 
-New expected categories after implementation:
+Currently implemented categories:
 
 - raw-vs-flat observation projection equality
+- Jad telegraph raw-vs-flat equivalence
+
+Still required as the Phase 1 gate broadens:
+
 - visible-NPC padding/order equivalence
 - categorical dictionary stability
-- Jad telegraph raw-vs-flat equivalence
 - no-leakage flat-path regression
 
 ### RL-Side
@@ -197,10 +200,13 @@ Likely test areas:
 - `fight_caves_rl/tests/determinism`
 - `fight_caves_rl/tests/parity`
 
-New expected categories after implementation:
+Currently implemented categories:
 
 - flat buffer handshake/version fail-fast
 - raw reference encoder vs flat row equality
+
+Still required as the Phase 1 gate broadens:
+
 - direct-ingestion batch-shape/dtype validation
 - flat-path parity canary reruns
 

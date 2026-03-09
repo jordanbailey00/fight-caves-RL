@@ -13,5 +13,7 @@ interface FightCaveSimulationRuntime {
 
     fun observeFightCave(player: Player, includeFutureLeakage: Boolean = false): HeadlessObservationV1
 
+    fun observeFightCaveFlat(player: Player): HeadlessTrainingFlatObservationV1
+
     fun shutdown()
 }

@@ -2,19 +2,19 @@
 
 Date: 2026-03-09
 
-This document defines the Phase 1 ownership and versioning contract between the existing raw headless observation path and the future flat training observation path.
+This document defines the Phase 1 ownership and versioning contract between the existing raw headless observation path and the flat training observation path.
 
 ## Purpose
 
 The raw path remains the semantic reference.
-The flat path is the future performance path.
+The flat path is the performance path.
 
 The flat path may change representation, layout, batching shape, and transport behavior, but it may not silently change gameplay meaning.
 
 ## Ownership
 
 - `fight-caves-RL` owns the raw semantic observation contract.
-- `fight-caves-RL` also owns any future sim-emitted flat training schema and its version ids.
+- `fight-caves-RL` also owns the sim-emitted flat training schema and its version ids.
 - `RL` owns flat-schema consumption, compatibility checks, manifests, and trainer-side ingestion.
 - `RSPS` remains oracle/reference only and is not part of the training hot path.
 
@@ -35,9 +35,9 @@ Protected semantic content includes:
 
 `jad_telegraph_state` is therefore part of the protected raw semantic contract, not an optional trainer convenience field.
 
-## Future Flat Training Path
+## Flat Training Path
 
-The future flat training path must be:
+The flat training path must be:
 
 - sim-owned
 - fixed-size
@@ -129,15 +129,10 @@ That is allowed only after Certification Mode proves equivalence for the relevan
 
 ## Current Phase 1 Status
 
-This Phase 1 contract definition is complete for `WC-P1-01`.
+This ownership contract is now active in the current Phase 1 implementation batch.
 
-The next Phase 1 steps are:
-
-- design the exact flat training schema/layout
-- design RL-side direct ingestion of that flat layout
-- define the concrete raw-vs-flat equivalence test matrix
-
-Phase 1 design references now frozen:
+Implemented Phase 1 references:
 
 - [flat_training_observation_schema.md](/home/jordan/code/fight-caves-RL/docs/flat_training_observation_schema.md)
 - [flat_observation_ingestion.md](/home/jordan/code/RL/docs/flat_observation_ingestion.md)
+- [raw_flat_equivalence_plan.md](/home/jordan/code/fight-caves-RL/docs/raw_flat_equivalence_plan.md)

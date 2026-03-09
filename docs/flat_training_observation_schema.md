@@ -2,14 +2,14 @@
 
 Date: 2026-03-09
 
-This document defines the first planned sim-owned flat observation schema for the production training path.
+This document defines the first sim-owned flat observation schema for the production training path.
 
 ## Schema Identity
 
 - `schema_id`: `headless_training_flat_observation_v1`
 - `schema_version`: `1`
 - `owner`: `fight-caves-RL`
-- `status`: design-frozen for `WC-P1-02`, not implemented yet
+- `status`: implemented in the Phase 1 implementation batch
 
 ## Purpose
 
@@ -41,6 +41,12 @@ Reason:
 
 This is a performance-path schema, not a semantic ownership transfer to RL.
 The schema is sim-owned even though its first version intentionally matches the existing RL-local policy vector shape.
+
+Current implementation note:
+
+- the sim now emits this schema directly through the headless runtime surface
+- Production Training Mode in RL consumes it directly in the batch step path
+- the raw path remains available for Certification Mode and replay/parity tooling
 
 ## Batch Representation
 
@@ -217,6 +223,11 @@ Before `headless_training_flat_observation_v1` is trusted in Production Training
 - identical visible-NPC slot alignment
 - identical categorical code mapping
 - identical Jad telegraph semantics and onset window
+
+Current implementation status:
+
+- the first source-side certification slice is now implemented in `FlatObservationProjectionEqualityTest`
+- wider native-Linux decision-gate review remains part of `WC-P1-05`
 
 ## Downstream RL Consumption Expectation
 

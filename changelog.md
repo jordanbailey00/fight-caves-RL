@@ -146,3 +146,15 @@
   - current README guidance
   - current end-to-end checklist docs
 - Existing detailed historical execution notes remain in `docs/changelog.md`.
+## 2026-03-09
+
+- Implemented the sim-owned Phase 1 flat observation emitter:
+  - added `game/src/main/kotlin/HeadlessFlatObservationBuilder.kt`
+  - extended the headless runtime surface to expose direct flat observations
+  - wired `HeadlessMain` and `OracleMain` to the new flat observation builder
+- Added the first source-side raw-vs-flat certification slice:
+  - `game/src/test/kotlin/headless/observation/FlatObservationProjectionEqualityTest.kt`
+  - coverage includes representative projection equality and explicit Jad telegraph preservation
+- Added the hosted native-Linux Phase 1 gate workflow:
+  - `.github/workflows/phase1_native_linux_packet.yml`
+- Phase 1 implementation is now ready for source-of-truth native-Linux gate review; no combat semantics changed in this batch.

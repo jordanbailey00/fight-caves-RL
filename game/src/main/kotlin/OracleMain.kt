@@ -21,6 +21,7 @@ data class OracleRuntime(
     val episodeInitializer: FightCaveEpisodeInitializer?,
     val actionAdapter: HeadlessActionAdapter?,
     val observationBuilder: HeadlessObservationBuilder?,
+    val flatObservationBuilder: HeadlessFlatObservationBuilder?,
 ) : FightCaveSimulationRuntime {
 
     override fun tick(times: Int) {
@@ -51,6 +52,11 @@ data class OracleRuntime(
     override fun observeFightCave(player: Player, includeFutureLeakage: Boolean): HeadlessObservationV1 {
         val builder = checkNotNull(observationBuilder) { "Oracle observation builder is unavailable; ensure oracle content scripts are loaded." }
         return builder.build(player, includeFutureLeakage)
+    }
+
+    override fun observeFightCaveFlat(player: Player): HeadlessTrainingFlatObservationV1 {
+        val builder = checkNotNull(flatObservationBuilder) { "Oracle flat observation builder is unavailable; ensure oracle content scripts are loaded." }
+        return builder.build(player)
     }
 
     override fun shutdown() {
@@ -108,6 +114,7 @@ object OracleMain {
                 episodeInitializer = fightCaveScript?.let { FightCaveEpisodeInitializer(it, configFiles) },
                 actionAdapter = actionAdapter,
                 observationBuilder = actionAdapter?.let(::HeadlessObservationBuilder),
+                flatObservationBuilder = actionAdapter?.let(::HeadlessFlatObservationBuilder),
             )
 
         logger.info {
@@ -116,4 +123,3 @@ object OracleMain {
         return runtime
     }
 }
-

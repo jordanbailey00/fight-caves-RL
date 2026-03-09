@@ -942,3 +942,33 @@ The previous Step 10 entry contains formatting artifacts from shell escaping. Ca
 
 ### Outcome
 - Naming/path references now align with the current local and GitHub repository identity.
+## 2026-03-09
+
+### Phase 1 Flat Observation Implementation
+
+#### Decisions
+1. The first flat training schema moved from design-only to implemented sim-owned runtime surface.
+2. `jad_telegraph_state` remains part of the protected raw-to-flat equivalence set and is now covered by source-side flat projection tests.
+3. Native-Linux remains the final Phase 1 continue-vs-pivot source of truth even though the local WSL preview already clears the numeric planning thresholds.
+
+#### Changes Made
+1. Added the flat observation emitter/runtime plumbing:
+   - `game/src/main/kotlin/HeadlessFlatObservationBuilder.kt`
+   - `game/src/main/kotlin/FightCaveSimulationRuntime.kt`
+   - `game/src/main/kotlin/HeadlessMain.kt`
+   - `game/src/main/kotlin/OracleMain.kt`
+2. Added the first flat certification slice:
+   - `game/src/test/kotlin/headless/observation/FlatObservationProjectionEqualityTest.kt`
+3. Added the hosted native-Linux Phase 1 packet workflow:
+   - `.github/workflows/phase1_native_linux_packet.yml`
+4. Updated the active flat-path docs:
+   - `docs/flat_training_observation_schema.md`
+   - `docs/raw_flat_observation_contract.md`
+   - `docs/raw_flat_equivalence_plan.md`
+
+#### Verification
+1. `./gradlew --no-daemon :game:compileKotlin :game:test --tests 'FlatObservationProjectionEqualityTest' :game:headlessDistZip` - PASS
+2. Targeted Jad/observation/parity regression slice - PASS
+
+#### Outcome
+- Phase 1 sim-side flat emitter implementation is in place and certification coverage has started.

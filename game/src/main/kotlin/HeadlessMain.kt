@@ -28,6 +28,7 @@ data class HeadlessRuntime(
     val episodeInitializer: FightCaveEpisodeInitializer?,
     val actionAdapter: HeadlessActionAdapter?,
     val observationBuilder: HeadlessObservationBuilder?,
+    val flatObservationBuilder: HeadlessFlatObservationBuilder?,
 ) : FightCaveSimulationRuntime {
     override fun tick(times: Int) {
         require(times >= 0) { "times must be >= 0, got $times." }
@@ -66,6 +67,11 @@ data class HeadlessRuntime(
     override fun observeFightCave(player: Player, includeFutureLeakage: Boolean): HeadlessObservationV1 {
         val builder = checkNotNull(observationBuilder) { "Headless observation builder is unavailable; ensure headless content scripts are loaded." }
         return builder.build(player, includeFutureLeakage)
+    }
+
+    override fun observeFightCaveFlat(player: Player): HeadlessTrainingFlatObservationV1 {
+        val builder = checkNotNull(flatObservationBuilder) { "Headless flat observation builder is unavailable; ensure headless content scripts are loaded." }
+        return builder.build(player)
     }
 
     override fun shutdown() {
@@ -173,6 +179,7 @@ object HeadlessMain {
                 episodeInitializer = fightCaveScript?.let { FightCaveEpisodeInitializer(it, configFiles) },
                 actionAdapter = actionAdapter,
                 observationBuilder = actionAdapter?.let(::HeadlessObservationBuilder),
+                flatObservationBuilder = actionAdapter?.let(::HeadlessFlatObservationBuilder),
             )
 
         logger.info {
@@ -230,4 +237,3 @@ object HeadlessMain {
         }
     }
 }
-
