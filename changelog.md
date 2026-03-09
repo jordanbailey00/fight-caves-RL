@@ -2,6 +2,17 @@
 
 ## 2026-03-09
 
+- Completed `WC-P1-02` from the workspace optimization plan.
+- Added the sim-owned flat-path design source of truth:
+  - `docs/flat_training_observation_schema.md`
+- Froze the first flat schema as:
+  - `schema_id = headless_training_flat_observation_v1`
+  - fixed-size `float32`
+  - row-major `[env_count, 134]`
+  - semantically equivalent to the current raw contract
+  - intentionally aligned to the already-shipped trainer tensor layout for the first migration step
+- Locked the downstream constraint that `jad_telegraph_state` remains part of the flat-path equivalence set rather than being replaced with an easier oracle cue.
+
 - Completed the sim-owned contract-definition portion of optimization `WC-P1-01`.
 - Added the new source-of-truth contract doc:
   - `docs/raw_flat_observation_contract.md`

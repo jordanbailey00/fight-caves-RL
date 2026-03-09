@@ -2,6 +2,23 @@
 
 Append-only log of implementation changes and decisions.
 
+## 2026-03-09 23:05:00 -04:00 - Phase 1 WC-P1-02 Flat Schema Design
+
+### Decisions
+1. Froze the first flat training schema as a conservative migration step that mirrors the already-shipped `134`-feature trainer tensor layout instead of redesigning the policy feature set at the same time.
+2. Kept the flat schema sim-owned even though `v1` intentionally aligns to the existing RL-side trainer layout.
+3. Carried `jad_telegraph_state` into the flat-schema equivalence set as protected semantic content rather than allowing it to become a trainer-only convenience field.
+
+### Changes Made
+1. Added the new design source of truth:
+   - `docs/flat_training_observation_schema.md`
+2. Updated `docs/raw_flat_observation_contract.md`:
+   - linked the contract to the new flat-schema design and the RL-side ingestion design
+
+### Outcome
+1. `WC-P1-02` is complete at the design-contract level.
+2. The next Phase 1 step can focus on raw-vs-flat equivalence gates against a specific flat schema instead of an abstract future layout.
+
 ## 2026-03-09 22:20:00 -04:00 - Phase 1 WC-P1-01 Contract Freeze
 
 ### Decisions

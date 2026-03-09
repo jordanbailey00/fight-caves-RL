@@ -136,3 +136,8 @@ The next Phase 1 steps are:
 - design the exact flat training schema/layout
 - design RL-side direct ingestion of that flat layout
 - define the concrete raw-vs-flat equivalence test matrix
+
+Phase 1 design references now frozen:
+
+- [flat_training_observation_schema.md](/home/jordan/code/fight-caves-RL/docs/flat_training_observation_schema.md)
+- [flat_observation_ingestion.md](/home/jordan/code/RL/docs/flat_observation_ingestion.md)
