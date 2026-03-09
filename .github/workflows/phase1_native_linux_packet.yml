@@ -172,6 +172,8 @@ jobs:
           base = f"https://raw.githubusercontent.com/jordanbailey00/fight-caves-RL/{branch}/phase0-native-linux/latest"
           files = (
               "gate_summary.json",
+              "phase0_packet.json",
+              "run_summary.json",
               "bridge_1env.json",
               "bridge_16env.json",
               "bridge_64env.json",
