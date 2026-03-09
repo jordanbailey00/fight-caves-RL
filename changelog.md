@@ -2,6 +2,14 @@
 
 ## 2026-03-09
 
+- Completed the sim-owned contract-definition portion of optimization `WC-P1-01`.
+- Added the new source-of-truth contract doc:
+  - `docs/raw_flat_observation_contract.md`
+- Locked the current raw headless observation path as the semantic reference for future flat-schema work:
+  - `docs/observation_schema.md` now explicitly states that future flat training schemas must preserve field meaning, visible-NPC ordering, and parity-sensitive combat cues such as `jad_telegraph_state`
+- Recorded the Jad telegraph downstream optimization implication:
+  - `jad_telegraph_state` is now protected raw semantic content for future flat training schema design, not a disposable trainer-local convenience field
+
 - Completed the remaining Jad telegraph validation slices:
   - `JAD-05` regression gate
   - `JAD-06` replay/demo outcome acceptance

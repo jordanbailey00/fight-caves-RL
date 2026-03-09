@@ -2,6 +2,24 @@
 
 Append-only log of implementation changes and decisions.
 
+## 2026-03-09 22:20:00 -04:00 - Phase 1 WC-P1-01 Contract Freeze
+
+### Decisions
+1. Froze the raw-vs-flat ownership boundary with the raw headless observation path remaining the semantic reference and any future flat training path remaining a sim-owned performance projection.
+2. Classified `jad_telegraph_state` as protected raw semantic content for future flat-schema work rather than a disposable trainer-local field.
+3. Kept this batch docs-first and contract-only; no emitter or transport implementation started.
+
+### Changes Made
+1. Added the new source-of-truth contract doc:
+   - `docs/raw_flat_observation_contract.md`
+2. Updated `docs/observation_schema.md`:
+   - linked the raw schema to the future flat-path contract
+   - explicitly protected visible-NPC ordering and `jad_telegraph_state` semantics in later flat-schema work
+
+### Outcome
+1. `WC-P1-01` is now complete at the sim-owned contract level.
+2. The next Phase 1 work can proceed to flat-emitter design without ambiguity about ownership, versioning, or the Jad cue's protected meaning.
+
 ## 2026-03-09 21:30:00 -04:00 - Jad Telegraph JAD-05 and JAD-06
 
 ### Decisions

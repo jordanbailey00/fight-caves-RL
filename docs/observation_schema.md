@@ -13,6 +13,11 @@ Compatibility policy:
 - New fields may only be added in an additive manner.
 - Field removals/renames require a new schema id/version.
 
+Future performance-path note:
+- this raw schema remains the semantic reference for any future flat training schema
+- any future flat training schema must preserve field meaning, visible-NPC ordering, and parity-sensitive combat cues such as `jad_telegraph_state`
+- see [raw_flat_observation_contract.md](/home/jordan/code/fight-caves-RL/docs/raw_flat_observation_contract.md)
+
 ## Top-Level Field Order
 
 The canonical ordered top-level keys are:
