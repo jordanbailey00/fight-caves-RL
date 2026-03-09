@@ -2,6 +2,41 @@
 
 Append-only log of implementation changes and decisions.
 
+## 2026-03-09 16:10:00 -04:00 - Jad Telegraph JAD-01 and JAD-02
+
+### Decisions
+1. Treated the current headed Jad animation onset tick as the canonical telegraph onset.
+2. Treated dialog/audio as presentation side effects, not the parity anchor.
+3. Preserved the existing hit-resolution path and prayer-check timing exactly:
+   - Jad still uses the custom `strongQueue("hit_target", 3)` windup
+   - the scheduled hit still uses `delay = 64`
+   - total onset-to-resolution window remains the current `6` game ticks
+4. Kept the change narrowly scoped to Jad:
+   - no wider combat-engine redesign
+   - no headless-only oracle field
+   - no change to observation payload in this step
+
+### Changes Made
+1. Added `game/src/main/kotlin/content/area/karamja/tzhaar_city/JadTelegraph.kt`:
+   - `JadTelegraphState`
+   - `JadCommittedAttackStyle`
+   - explicit timing constants
+   - per-NPC telegraph lifecycle state and scheduling helpers
+2. Updated `game/src/main/kotlin/content/entity/npc/combat/Attack.kt`:
+   - starts the Jad telegraph on the same tick the headed attack animation begins
+3. Updated `game/src/main/kotlin/content/area/karamja/tzhaar_city/TzTokJad.kt`:
+   - replaced the custom Jad timing literals with shared named constants
+4. Added `game/src/test/kotlin/content/area/karamja/tzhaar_city/JadTelegraphStateTest.kt`:
+   - verifies style mapping
+   - verifies onset tick capture
+   - verifies resolve tick capture
+   - verifies telegraph lifecycle clearing after the preserved reaction window
+
+### Inspection Findings Captured
+1. Current headed animation onset occurs in the generic NPC swing path before the Jad-specific hit queue is scheduled.
+2. Current Jad attack definitions use animation/gfx/sound cues; there is no Jad-specific `say(...)` cue in the attack definition path.
+3. Prayer semantics remain downstream in the existing hit/damage path and were left unchanged.
+
 ## 2026-03-09 03:45:00 -04:00 - Active Phase 0 Doc Cleanup
 
 ### Decisions

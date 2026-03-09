@@ -2,6 +2,24 @@
 
 ## 2026-03-09
 
+- Started the Jad telegraph parity rework and completed the first two scoped chunks:
+  - `JAD-01` current timing freeze and integration-point audit
+  - `JAD-02` authoritative Jad telegraph state in the shared combat path
+- Codified the existing Jad timing contract without changing combat semantics:
+  - `TzTokJad` still queues the custom Jad hit after `3` game ticks
+  - the Jad hit still resolves through the existing `hit(... delay = 64)` path
+  - total telegraph-to-resolution window remains the current `6` game ticks
+- Added repo-owned Jad telegraph state in:
+  - `game/src/main/kotlin/content/area/karamja/tzhaar_city/JadTelegraph.kt`
+- Anchored telegraph onset to the current headed animation tick by starting the Jad telegraph at the generic NPC swing point in:
+  - `game/src/main/kotlin/content/entity/npc/combat/Attack.kt`
+- Kept the existing Jad-specific attack override in:
+  - `game/src/main/kotlin/content/area/karamja/tzhaar_city/TzTokJad.kt`
+  but replaced raw timing literals with named shared constants so the parity contract is explicit.
+- Added initial Jad telegraph regression coverage in:
+  - `game/src/test/kotlin/content/area/karamja/tzhaar_city/JadTelegraphStateTest.kt`
+- No headless observation or RL-side schema exposure was added in this step yet; that remains later Jad work.
+
 - Started Phase 0 optimization implementation work for the headless sim measurement gate.
 - Added clean standalone sim measurement entrypoints in `game/build.gradle.kts`:
   - `:game:headlessPerformanceReport`
