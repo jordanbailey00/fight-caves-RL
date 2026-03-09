@@ -235,7 +235,7 @@ Reason:
 
 ## Audit Position
 
-The direct sim profiler work is now actionable enough for Phase 0:
-- the standalone harness gives a credible current-host per-worker ceiling estimate
+The direct sim profiler work is now actionable enough for optimization planning:
+- the standalone harness gives a credible per-worker ceiling estimate
 - the clean JFR path provides attributable CPU and allocation samples on headless runtime frames
-- the remaining blocker before Phase 1 is not missing profiler infrastructure; it is the native-Linux source-of-truth rerun
+- the native-Linux source-of-truth rerun has now completed, so profiler infrastructure is no longer a Phase 0 blocker

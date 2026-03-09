@@ -2,6 +2,17 @@
 
 Append-only log of implementation changes and decisions.
 
+## 2026-03-09 03:45:00 -04:00 - Active Phase 0 Doc Cleanup
+
+### Decisions
+1. Pruned stale Phase 0 blocker wording from active sim-side profiling docs after the native-Linux gate passed.
+2. Kept the changelog history intact; only the live profiler-position text was tightened.
+
+### Changes Made
+1. Updated `docs/sim_profiler_report.md`:
+   - removed the old statement that the native-Linux rerun was still the remaining blocker before Phase 1
+   - replaced it with the current state: profiler infrastructure is no longer a Phase 0 blocker
+
 ## 2026-03-09 03:30:00 -04:00 - Phase 0 Native-Linux Gate Passed
 
 ### Decisions
