@@ -1,0 +1,11 @@
+{
+  "error": "phase1_packet_missing",
+  "head_sha": "0b56e8b27d26c6a0ca60533508148571eb8e5035",
+  "packet_meta": {
+    "exit_code": 1,
+    "stderr_path": "/home/runner/work/_temp/phase1_packet_stderr.log",
+    "stdout_path": "/home/runner/work/_temp/phase1_packet_stdout.log"
+  },
+  "repository": "jordanbailey00/fight-caves-RL",
+  "workflow_run_id": "22880052013"
+}
