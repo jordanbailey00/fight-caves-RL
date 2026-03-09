@@ -2,6 +2,23 @@
 
 Append-only log of implementation changes and decisions.
 
+## 2026-03-09 03:00:00 -04:00 - Phase 0 Native-Linux Artifact Gate Hardening
+
+### Decisions
+1. Treated the packaged headless distribution as an explicit prerequisite for the hosted and self-hosted Phase 0 packet paths.
+2. Preserved `:game:headlessDistZip` as the canonical artifact task for the benchmark/bridge path.
+3. Kept stdout/stderr publication on the hosted path so the next native-Linux rerun produces actionable failure evidence if the packet still fails.
+
+### Changes Made
+1. Updated `.github/workflows/phase0_native_linux_packet.yml`:
+   - runs `./gradlew --no-daemon :game:headlessDistZip` before the RL packet refresh
+   - uploads `phase0_packet_stdout.log`, `phase0_packet_stderr.log`, and `phase0_packet_meta.json` with the normal Phase 0 artifacts
+
+### Why This Was Needed
+1. The RL Phase 0 packet benchmarks consume the packaged headless distribution via the bridge/runtime discovery path.
+2. The standalone sim report/profile tasks do not build that distribution as a side effect.
+3. On a fresh hosted runner, this left packet generation vulnerable to failing before any bridge or train rows could run.
+
 ## 2026-03-09 02:30:20 -04:00 - Phase 0 Native-Linux Packet Host Attempt
 
 ### Decisions

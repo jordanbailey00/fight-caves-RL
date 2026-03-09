@@ -157,13 +157,40 @@ jobs:
       - name: Run standalone sim profile
         run: ./gradlew --no-daemon :game:headlessPerformanceProfile
 
+      - name: Build canonical headless distribution
+        run: ./gradlew --no-daemon :game:headlessDistZip
+
       - name: Refresh native Linux Phase 0 packet
+        id: refresh-phase0-packet
+        shell: bash
         env:
           FIGHT_CAVES_RL_REPO: ${{ github.workspace }}
           RSPS_REPO: ${{ github.workspace }}/_workspace/RSPS
+          PACKET_STDOUT: ${{ runner.temp }}/phase0_packet_stdout.log
+          PACKET_STDERR: ${{ runner.temp }}/phase0_packet_stderr.log
+          PACKET_META: ${{ runner.temp }}/phase0_packet_meta.json
         run: |
+          set +e
           uv run --project _workspace/RL python _workspace/RL/scripts/refresh_phase0_packet.py \
-            --output-dir "${RUNNER_TEMP}/fc_phase0_packet_linux"
+            --output-dir "${RUNNER_TEMP}/fc_phase0_packet_linux" \
+            >"${PACKET_STDOUT}" 2>"${PACKET_STDERR}"
+          status=$?
+          PHASE0_PACKET_EXIT_CODE="$status" python3 - <<'PY'
+          import json
+          import os
+          from pathlib import Path
+
+          payload = {
+              "exit_code": int(os.environ["PHASE0_PACKET_EXIT_CODE"]),
+              "stdout_path": os.environ["PACKET_STDOUT"],
+              "stderr_path": os.environ["PACKET_STDERR"],
+          }
+          Path(os.environ["PACKET_META"]).write_text(
+              json.dumps(payload, indent=2, sort_keys=True) + "\n",
+              encoding="utf-8",
+          )
+          PY
+          exit $status
 
       - name: Summarize gate
         env:
@@ -214,6 +241,9 @@ jobs:
         env:
           PACKET_DIR: ${{ runner.temp }}/fc_phase0_packet_linux
           SUMMARY_JSON: ${{ runner.temp }}/fc_phase0_gate_summary.json
+          PACKET_STDOUT: ${{ runner.temp }}/phase0_packet_stdout.log
+          PACKET_STDERR: ${{ runner.temp }}/phase0_packet_stderr.log
+          PACKET_META: ${{ runner.temp }}/phase0_packet_meta.json
           RESULTS_BRANCH: codex/phase0-results
           GITHUB_TOKEN: ${{ github.token }}
         run: |
@@ -266,10 +296,20 @@ jobs:
                   "head_sha": os.environ["GITHUB_SHA"],
                   "error": "phase0_packet_missing",
               }
+              packet_meta = Path(os.environ["PACKET_META"])
+              if packet_meta.is_file():
+                  error_summary["packet_meta"] = json.loads(packet_meta.read_text(encoding="utf-8"))
               (target / "error_summary.json").write_text(
                   json.dumps(error_summary, indent=2, sort_keys=True) + "\n",
                   encoding="utf-8",
               )
+              for env_name, target_name in (
+                  ("PACKET_STDOUT", "phase0_packet_stdout.log"),
+                  ("PACKET_STDERR", "phase0_packet_stderr.log"),
+              ):
+                  source = Path(os.environ[env_name])
+                  if source.is_file():
+                      shutil.copy2(source, target / target_name)
 
           subprocess.run(["git", "-C", str(workdir), "config", "user.name", "github-actions[bot]"], check=True)
           subprocess.run(
@@ -296,6 +336,9 @@ jobs:
           name: phase0-native-linux-${{ github.run_id }}
           path: |
             ${{ runner.temp }}/fc_phase0_packet_linux
+            ${{ runner.temp }}/phase0_packet_stdout.log
+            ${{ runner.temp }}/phase0_packet_stderr.log
+            ${{ runner.temp }}/phase0_packet_meta.json
             docs/performance_benchmark.log
             docs/performance_benchmark.json
             game/build/reports/headless-performance
