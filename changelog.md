@@ -2,6 +2,31 @@
 
 ## 2026-03-09
 
+- Started Phase 0 optimization implementation work for the headless sim measurement gate.
+- Added clean standalone sim measurement entrypoints in `game/build.gradle.kts`:
+  - `:game:headlessPerformanceReport`
+  - `:game:headlessPerformanceProfile`
+- Expanded the sim-side performance harness in:
+  - `game/src/test/kotlin/headless/performance/HeadlessPerformanceReportGenerator.kt`
+  - the harness now writes both `docs/performance_benchmark.log` and `docs/performance_benchmark.json`
+  - the harness now records runtime metadata and a batched headless throughput row
+  - the harness now publishes a per-worker ceiling estimate
+- Updated performance harness regression coverage in:
+  - `game/src/test/kotlin/headless/performance/HeadlessPerformanceReportGenerationTest.kt`
+- Executed the standalone report and profile tasks successfully on the current WSL host:
+  - `./gradlew --no-daemon :game:headlessPerformanceReport`
+  - `./gradlew --no-daemon :game:headlessPerformanceProfile`
+- Recorded the current-host standalone sim results:
+  - single-slot throughput about `30.5k` ticks/sec
+  - batched headless throughput (`16 envs`) about `473.6k` env steps/sec
+  - clean JFR artifact emitted at `game/build/reports/headless-performance/headless_performance_profile.jfr`
+- Recorded one important Phase 0 interpretation change:
+  - the older Step 11 `8.9k` artifact is now historical context, not the active per-worker ceiling estimate
+  - the remaining blocker before Phase 1 is the native-Linux source-of-truth rerun, not missing profiler infrastructure
+- Updated sim-side docs to reflect the new standalone Phase 0 path:
+  - `docs/sim_profiler_report.md`
+  - `docs/performance_report.md`
+
 - Added a sim-side performance audit report in:
   - `docs/sim_profiler_report.md`
 - Recorded the current audit outcome for JVM profiling:

@@ -2,6 +2,27 @@
 
 Generated from `docs/performance_benchmark.log` and Step 11 verification test runs.
 
+## Historical Note
+
+This document remains the historical Step 11 report.
+
+For active optimization work, the newer standalone Phase 0 entrypoints should now be treated as the current source for sim-side benchmark artifacts:
+
+```bash
+source /home/jordan/code/.workspace-env.sh
+cd /home/jordan/code/fight-caves-RL
+./gradlew --no-daemon :game:headlessPerformanceReport
+./gradlew --no-daemon :game:headlessPerformanceProfile
+```
+
+Current-host WSL standalone values from `docs/performance_benchmark.json`:
+
+- single-slot throughput: `30509.78` ticks/s
+- batched headless throughput (`16 envs`): `473574.60` env steps/s
+- soak throughput: `42621.76` ticks/s
+
+These standalone Phase 0 values supersede the older Step 11 `8891.93` ticks/s artifact for current-host capacity estimation. The Step 11 content below is preserved because it still records the original extraction-phase validation context.
+
 ## Scope
 
 This report covers Step 11 requirements:
@@ -70,4 +91,3 @@ Per-suite outcomes from `game/build/test-results/test/TEST-*.xml`:
 - Soak stability gate is satisfied (bounded final observation and sustained throughput).
 - Post-optimization parity gate is satisfied (full Step 9 matrix rerun passed).
 - Step 11 exit criteria are met.
-

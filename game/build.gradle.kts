@@ -126,6 +126,60 @@ tasks {
         dependsOn("headlessDistZip")
     }
 
+    register<JavaExec>("headlessPerformanceReport") {
+        description = "Runs the standalone headless performance harness and writes repo-owned benchmark artifacts."
+        group = "verification"
+        dependsOn("testClasses", "scriptMetadata")
+        classpath = sourceSets["test"].runtimeClasspath
+        mainClass.set("HeadlessPerformanceReportGenerator")
+        workingDir = project.projectDir
+        systemProperty("java.awt.headless", "true")
+        val outputLog = rootProject.file("docs/performance_benchmark.log")
+        val outputJson = rootProject.file("docs/performance_benchmark.json")
+        outputs.files(outputLog, outputJson)
+        args(
+            "--output-log",
+            outputLog.absolutePath,
+            "--output-json",
+            outputJson.absolutePath,
+        )
+    }
+
+    register<JavaExec>("headlessPerformanceProfile") {
+        description = "Runs the standalone headless performance harness under JFR without the JUnit/Gradle test worker noise."
+        group = "verification"
+        dependsOn("testClasses", "scriptMetadata")
+        classpath = sourceSets["test"].runtimeClasspath
+        mainClass.set("HeadlessPerformanceReportGenerator")
+        workingDir = project.projectDir
+        systemProperty("java.awt.headless", "true")
+
+        val reportsDir = layout.buildDirectory.dir("reports/headless-performance")
+        val outputLog = reportsDir.map { it.file("headless_performance_profile.log").asFile }
+        val outputJson = reportsDir.map { it.file("headless_performance_profile.json").asFile }
+        val jfrOutput =
+            providers.gradleProperty("headlessJfrOutput").orElse(
+                reportsDir.map { it.file("headless_performance_profile.jfr").asFile.absolutePath }
+            )
+        inputs.property("headlessJfrOutput", jfrOutput)
+        outputs.files(outputLog, outputJson)
+
+        doFirst {
+            reportsDir.get().asFile.mkdirs()
+        }
+
+        jvmArgs(
+            "-XX:StartFlightRecording=filename=${jfrOutput.get()},settings=profile,dumponexit=true",
+            "-XX:FlightRecorderOptions=stackdepth=256",
+        )
+        args(
+            "--output-log",
+            outputLog.get().absolutePath,
+            "--output-json",
+            outputJson.get().absolutePath,
+        )
+    }
+
     register<Test>("e2eTest") {
         description = "Runs Fight Caves headless/oracle end-to-end release gate suites."
         group = "verification"
@@ -337,8 +391,6 @@ spotless {
         flexmark()
     }
 }
-
-
 
 
 

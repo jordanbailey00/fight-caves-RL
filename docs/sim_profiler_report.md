@@ -17,6 +17,46 @@ This report records what was and was not measurable about the JVM/headless runti
 
 Determine whether the JVM/headless sim itself is already the dominant bottleneck, or whether the outer RL stack is slower.
 
+## Phase 0 Standalone Harness Outcome
+
+The repo now has clean standalone measurement entrypoints that do not rely on the JUnit test worker path:
+
+```bash
+source /home/jordan/code/.workspace-env.sh
+cd /home/jordan/code/fight-caves-RL
+./gradlew --no-daemon :game:headlessPerformanceReport
+./gradlew --no-daemon :game:headlessPerformanceProfile
+```
+
+Artifacts produced by those entrypoints:
+
+- report log:
+  - `/home/jordan/code/fight-caves-RL/docs/performance_benchmark.log`
+- report json:
+  - `/home/jordan/code/fight-caves-RL/docs/performance_benchmark.json`
+- clean profile artifacts:
+  - `/home/jordan/code/fight-caves-RL/game/build/reports/headless-performance/headless_performance_profile.log`
+  - `/home/jordan/code/fight-caves-RL/game/build/reports/headless-performance/headless_performance_profile.json`
+  - `/home/jordan/code/fight-caves-RL/game/build/reports/headless-performance/headless_performance_profile.jfr`
+
+Current-host WSL standalone report values:
+
+- single-slot throughput benchmark:
+  - `30509.78` ticks/s
+- batched headless benchmark (`16` envs, `4000` tick rounds):
+  - `473574.60` env steps/s
+  - `29598.41` tick rounds/s
+- soak benchmark:
+  - `42621.76` ticks/s
+- per-worker ceiling estimate from the standalone report:
+  - `workers_needed_for_100k = 1` on this host-class measurement
+
+Interpretation:
+
+- this standalone harness materially supersedes the older Step 11 `8.9k` artifact for current-host performance analysis
+- the clean standalone numbers make `100k+` look plausible from the sim-ceiling perspective
+- the remaining measured collapse is therefore much more clearly in the RL outer stack
+
 ## What Was Measured
 
 ### 1. Existing Pure-JVM Benchmark Artifact
@@ -30,6 +70,7 @@ Existing current-repo artifact values:
 
 Important limitation:
 - this artifact is real repo evidence, but it was generated in a Windows-native environment, not on the WSL host used for the rest of this audit packet
+- it should now be treated as historical context, not the active per-worker ceiling estimate
 
 ### 2. Current-Host JUnit Sanity Run
 
@@ -44,8 +85,46 @@ cd /home/jordan/code/fight-caves-RL
 Outcome:
 - passed on the current WSL host
 - the test does not emit numeric throughput itself; it only enforces a minimum gate
+- it remains useful as a regression gate, not as the preferred Phase 0 measurement path
 
-### 3. Current-Host JFR Attempts
+### 3. Clean Standalone JFR Capture
+
+Command:
+
+```bash
+source /home/jordan/code/.workspace-env.sh
+cd /home/jordan/code/fight-caves-RL
+./gradlew --no-daemon :game:headlessPerformanceProfile
+```
+
+Outcome:
+- produced a clean standalone JFR:
+  - `/home/jordan/code/fight-caves-RL/game/build/reports/headless-performance/headless_performance_profile.jfr`
+- produced matching standalone report log/json sidecars
+- `jfr summary` succeeded cleanly on the generated file
+- the profile duration was about `3 s`
+- unlike the older JUnit capture, the sample stream now includes headless runtime frames
+
+Direct evidence from the clean standalone JFR:
+- `jdk.ExecutionSample`: `101`
+- `jdk.ObjectAllocationSample`: `384`
+- `jdk.GarbageCollection`: `4`
+- `jfr print --events jdk.ExecutionSample ... | rg 'Headless|GameLoop'` now hits:
+  - `HeadlessRuntime.tick(int)`
+  - `HeadlessBatchSteppingKt.runFightCaveBatch(...)`
+  - `HeadlessObservationBuilder.build(...)`
+  - `HeadlessActionAdapter.visibleNpcTargets(...)`
+  - `world.gregs.voidps.engine.GameLoop.tick(...)`
+- `jfr print --events jdk.ObjectAllocationSample ... | rg 'Headless|LinkedHashMap|ArrayList'` now hits:
+  - `HeadlessActionAdapter.applied(...)`
+  - `HeadlessPerformanceReportGenerator.runSingleSlotBenchmark(...)`
+  - `HeadlessPerformanceReportGenerator.runSoakBenchmark(...)`
+  - repeated `LinkedHashMap` and `ArrayList` allocation sites on the hot path
+
+Interpretation:
+- this capture is clean enough to use for function-level optimization targeting
+- startup and cache loading still appear in the profile, but headless hot-path frames are now visible and attributable
+### 4. Earlier JFR Attempts And Tooling Limits
 
 Attempt A:
 - embedded-JVM bridge benchmark with:
@@ -105,10 +184,10 @@ Allocation and GC summary from the contaminated capture:
   - `G1Old`: `8`
 
 Interpretation:
-- this JFR file is not clean enough to attribute CPU or allocation cost to the headless fight-caves runtime itself
-- the profiler signal is contaminated by the Gradle/JUnit/JaCoCo harness
+- this older JFR file is not clean enough to attribute CPU or allocation cost to the headless fight-caves runtime itself
+- it remains useful as evidence for why the standalone Phase 0 profiler path was necessary
 
-### 4. Attach Tooling Result
+### 5. Attach Tooling Result
 
 Command:
 
@@ -127,34 +206,36 @@ Interpretation:
 ## Evidence-Based Conclusions
 
 Facts:
-- There is a real direct-JVM artifact in the repo at about `8.9k` ticks/s.
+- There is now a clean standalone current-host report at about `30.5k` single-slot ticks/s and about `473.6k` batched env steps/s at `16` envs.
 - The current WSL host can pass the step-rate JUnit benchmark.
-- Clean JVM-only hot-function sampling was not obtained in this pass because the available JFR routes were either dump-failing or harness-contaminated.
+- Clean JVM-only hot-function sampling is now available through `:game:headlessPerformanceProfile`.
 
 What this does and does not prove:
-- It does prove the sim is not already in the `100000+` SPS regime.
-- It does not prove which exact JVM functions dominate on the WSL host in isolation.
+- It does not prove that the full end-to-end stack can reach `100000+` today.
+- It does show that the standalone sim ceiling is far higher than the older Step 11 artifact suggested.
+- It now does provide attributable current-host JVM-side targets for the next optimization pass.
 
 ## What Remains Uncertain
 
-- exact current-host CPU flamegraph for the headless runtime only
-- exact current-host allocation hot spots for the headless runtime only
-- exact current-host GC fraction attributable only to the benchmarked fight-caves path
+- native-Linux standalone sim numbers on the approved source-of-truth host class
+- native-Linux clean standalone JFR on that same host class
 
 ## Best Supported Next Sim-Side Targets
 
-These are still hypotheses, not profiler-proven facts:
-- `HeadlessObservationBuilder`
+These are now profiler-supported targets rather than pure hypotheses:
+- `HeadlessObservationBuilder.build(...)`
 - `HeadlessActionAdapter.visibleNpcTargets(...)`
-- per-tick visible-NPC sorting and map/list construction
-- any repeated `LinkedHashMap` / ordered-object construction in the observation path
+- `HeadlessActionAdapter.applied(...)`
+- repeated `LinkedHashMap` / ordered-object construction in action and observation paths
+- repeated `ArrayList` growth / iteration on hot paths
 
 Reason:
-- the outer Python profile shows that observation retrieval is cheap relative to Python object conversion, which means the next high-value sim-side work is likely to be observation emission and transport shape, not generic combat math tuning first
+- the outer Python profile still shows observation conversion is the dominant RL-side cost
+- the clean standalone JFR now also shows actionable headless-side observation/action allocation sites rather than only harness noise
 
 ## Audit Position
 
-The direct sim profiler work in this pass is inconclusive on function-level attribution, but it is still useful:
-- it confirms the tooling limitations
-- it preserves the direct-JVM artifact boundary
-- it prevents overclaiming about sim hotspots without clean samples
+The direct sim profiler work is now actionable enough for Phase 0:
+- the standalone harness gives a credible current-host per-worker ceiling estimate
+- the clean JFR path provides attributable CPU and allocation samples on headless runtime frames
+- the remaining blocker before Phase 1 is not missing profiler infrastructure; it is the native-Linux source-of-truth rerun
