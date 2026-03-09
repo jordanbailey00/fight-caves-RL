@@ -2,6 +2,31 @@
 
 Append-only log of implementation changes and decisions.
 
+## 2026-03-09 03:30:00 -04:00 - Phase 0 Native-Linux Gate Passed
+
+### Decisions
+1. Accepted the hosted native-Linux packet as the approved Phase 0 source-of-truth fallback while the self-hosted Linux runner remains unavailable.
+2. Treated the hosted packet as sufficient to unblock Phase 1 because it satisfied the approved hard-gate conditions:
+   - `benchmark_host_class = linux_native`
+   - `native_linux_source_of_truth = true`
+   - `phase1_unblocked = true`
+3. Preserved the self-hosted workflow as the preferred future path for repeat runs against the real workspace topology.
+
+### Verification
+1. Hosted workflow run `22842056526` completed successfully after the cache/bootstrap and artifact-prerequisite hardening.
+2. Published results branch `codex/phase0-results` now contains:
+   - `phase0-native-linux/latest/run_summary.json`
+   - `phase0-native-linux/latest/gate_summary.json`
+   - `phase0-native-linux/latest/phase0_packet.json`
+3. Gate summary reported:
+   - `sim_single_slot_ticks_per_second = 30532.58`
+   - `sim_batched_env_steps_per_second = 404635.41`
+   - `workers_needed_for_100k = 1`
+
+### Outcome
+- Phase 0 native-Linux measurement is no longer blocked.
+- The remaining optimization work can now move to approved Phase 1 design work in `RL`.
+
 ## 2026-03-09 03:00:00 -04:00 - Phase 0 Native-Linux Artifact Gate Hardening
 
 ### Decisions
