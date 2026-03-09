@@ -2,6 +2,32 @@
 
 Append-only log of implementation changes and decisions.
 
+## 2026-03-09 21:30:00 -04:00 - Jad Telegraph JAD-05 and JAD-06
+
+### Decisions
+1. Preserved the discovered engine truth that Jad protection is sampled when the queued `hit(...)` is constructed after the `3`-tick windup, not at the later delayed visual landing tick.
+2. Extended the authoritative Jad trace/state to retain last-attack timing and committed outcome fields after the active telegraph clears back to idle so replay/parity inspection can see the finished attack.
+3. Scoped the final parity acceptance to Jad-specific trace/outcome assertions when unrelated oracle-side world activity would otherwise make whole-snapshot parity too noisy for this mini-rework.
+
+### Changes Made
+1. Updated `game/src/main/kotlin/content/area/karamja/tzhaar_city/JadTelegraph.kt`:
+   - added `prayer_check_tick`
+   - added `sampled_protection_prayer`
+   - added `protected_at_prayer_check`
+   - added `resolved_damage`
+   - retained last telegraph start/resolve ticks for post-resolution trace inspection
+2. Updated `game/src/main/kotlin/content/area/karamja/tzhaar_city/TzTokJad.kt`:
+   - recorded Jad outcome metadata at the existing hit-construction point without changing combat timing
+3. Added focused Jad outcome support/tests:
+   - `game/src/test/kotlin/content/area/karamja/tzhaar_city/JadTelegraphTestSupport.kt`
+   - `game/src/test/kotlin/content/area/karamja/tzhaar_city/JadTelegraphPrayerProtectionTest.kt`
+   - `game/src/test/kotlin/headless/determinism/HeadlessReplayJadTelegraphTraceTest.kt`
+   - `game/src/test/kotlin/headless/parity/ParityHarnessJadPrayerResolutionParityTest.kt`
+
+### Outcome
+1. The replay/parity surfaces can now inspect Jad telegraph onset, prayer-check timing, protection outcome, and resolved damage from the same authoritative combat event/state.
+2. Regression coverage now proves that late prayer toggles after queued-hit construction are too late, while late toggles after sampling do not retroactively change the committed Jad outcome.
+
 ## 2026-03-09 16:10:00 -04:00 - Jad Telegraph JAD-01 and JAD-02
 
 ### Decisions

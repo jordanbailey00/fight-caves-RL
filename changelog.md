@@ -2,6 +2,28 @@
 
 ## 2026-03-09
 
+- Completed the remaining Jad telegraph validation slices:
+  - `JAD-05` regression gate
+  - `JAD-06` replay/demo outcome acceptance
+- Extended the authoritative Jad trace in:
+  - `game/src/main/kotlin/content/area/karamja/tzhaar_city/JadTelegraph.kt`
+  - `game/src/main/kotlin/content/area/karamja/tzhaar_city/TzTokJad.kt`
+- Added persistent outcome/timing fields for replay/parity inspection:
+  - `prayer_check_tick`
+  - `sampled_protection_prayer`
+  - `protected_at_prayer_check`
+  - `resolved_damage`
+  - retained last-attack telegraph timing even after the active telegraph clears back to idle
+- Locked the current engine prayer timing with regression tests instead of changing it:
+  - Jad protection is sampled when the queued `hit(...)` is constructed after the `3`-tick windup
+  - the later delayed visual landing does not reopen the prayer decision window
+- Added focused Jad protection/outcome coverage in:
+  - `game/src/test/kotlin/content/area/karamja/tzhaar_city/JadTelegraphPrayerProtectionTest.kt`
+  - `game/src/test/kotlin/content/area/karamja/tzhaar_city/JadTelegraphTestSupport.kt`
+  - `game/src/test/kotlin/headless/determinism/HeadlessReplayJadTelegraphTraceTest.kt`
+  - `game/src/test/kotlin/headless/parity/ParityHarnessJadPrayerResolutionParityTest.kt`
+- Scoped the final parity acceptance to Jad-specific trace/outcome assertions when unrelated oracle-side wave activity would add whole-snapshot noise outside this mini-rework.
+
 - Completed the next Jad telegraph parity slices:
   - `JAD-03` headless observation exposure
   - `JAD-04` replay/parity trace wiring

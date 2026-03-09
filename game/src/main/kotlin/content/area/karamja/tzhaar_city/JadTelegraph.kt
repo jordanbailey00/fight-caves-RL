@@ -1,7 +1,12 @@
 package content.area.karamja.tzhaar_city
 
+import content.skill.prayer.protectMagic
+import content.skill.prayer.protectMelee
+import content.skill.prayer.protectRange
 import world.gregs.voidps.engine.GameLoop
+import world.gregs.voidps.engine.entity.character.Character
 import world.gregs.voidps.engine.entity.character.npc.NPC
+import world.gregs.voidps.engine.entity.character.player.Player
 import world.gregs.voidps.engine.queue.strongQueue
 import world.gregs.voidps.engine.timer.CLIENT_TICKS
 
@@ -24,6 +29,10 @@ data class JadTelegraphTrace(
     val telegraphStateCode: Int,
     val telegraphStartTick: Int,
     val hitResolveTick: Int,
+    val prayerCheckTick: Int,
+    val sampledProtectionPrayer: String,
+    val protectedAtPrayerCheck: Boolean,
+    val resolvedDamage: Int,
 ) {
     fun toOrderedMap(): LinkedHashMap<String, Any> =
         linkedMapOf(
@@ -33,6 +42,10 @@ data class JadTelegraphTrace(
             "telegraph_state_code" to telegraphStateCode,
             "telegraph_start_tick" to telegraphStartTick,
             "hit_resolve_tick" to hitResolveTick,
+            "prayer_check_tick" to prayerCheckTick,
+            "sampled_protection_prayer" to sampledProtectionPrayer,
+            "protected_at_prayer_check" to protectedAtPrayerCheck,
+            "resolved_damage" to resolvedDamage,
         )
 }
 
@@ -45,8 +58,14 @@ val JAD_HIT_RESOLVE_OFFSET_TICKS: Int = JAD_HIT_TARGET_QUEUE_TICKS + CLIENT_TICK
 private const val JAD_TELEGRAPH_STATE_KEY = "jad_telegraph_state"
 private const val JAD_TELEGRAPH_START_TICK_KEY = "jad_telegraph_start_tick"
 private const val JAD_HIT_RESOLVE_TICK_KEY = "jad_hit_resolve_tick"
+private const val JAD_LAST_TELEGRAPH_START_TICK_KEY = "jad_last_telegraph_start_tick"
+private const val JAD_LAST_HIT_RESOLVE_TICK_KEY = "jad_last_hit_resolve_tick"
 private const val JAD_COMMITTED_ATTACK_STYLE_KEY = "jad_committed_attack_style"
 private const val JAD_ATTACK_SEQUENCE_KEY = "jad_attack_sequence"
+private const val JAD_PRAYER_CHECK_TICK_KEY = "jad_prayer_check_tick"
+private const val JAD_SAMPLED_PROTECTION_PRAYER_KEY = "jad_sampled_protection_prayer"
+private const val JAD_PROTECTED_AT_PRAYER_CHECK_KEY = "jad_protected_at_prayer_check"
+private const val JAD_RESOLVED_DAMAGE_KEY = "jad_resolved_damage"
 private const val JAD_TELEGRAPH_CLEAR_QUEUE = "jad_telegraph_clear"
 
 fun jadCommittedAttackStyleForAttackId(attackId: String): JadCommittedAttackStyle? =
@@ -97,6 +116,30 @@ var NPC.jadAttackSequence: Int
     get() = get(JAD_ATTACK_SEQUENCE_KEY, 0)
     set(value) = set(JAD_ATTACK_SEQUENCE_KEY, value)
 
+var NPC.jadPrayerCheckTick: Int
+    get() = get(JAD_PRAYER_CHECK_TICK_KEY, -1)
+    set(value) = set(JAD_PRAYER_CHECK_TICK_KEY, value)
+
+var NPC.jadSampledProtectionPrayer: String
+    get() = get(JAD_SAMPLED_PROTECTION_PRAYER_KEY, "none")
+    set(value) = set(JAD_SAMPLED_PROTECTION_PRAYER_KEY, value)
+
+var NPC.jadProtectedAtPrayerCheck: Boolean
+    get() = get(JAD_PROTECTED_AT_PRAYER_CHECK_KEY, false)
+    set(value) = set(JAD_PROTECTED_AT_PRAYER_CHECK_KEY, value)
+
+var NPC.jadResolvedDamage: Int
+    get() = get(JAD_RESOLVED_DAMAGE_KEY, -1)
+    set(value) = set(JAD_RESOLVED_DAMAGE_KEY, value)
+
+private var NPC.jadLastTelegraphStartTick: Int
+    get() = get(JAD_LAST_TELEGRAPH_START_TICK_KEY, -1)
+    set(value) = set(JAD_LAST_TELEGRAPH_START_TICK_KEY, value)
+
+private var NPC.jadLastHitResolveTick: Int
+    get() = get(JAD_LAST_HIT_RESOLVE_TICK_KEY, -1)
+    set(value) = set(JAD_LAST_HIT_RESOLVE_TICK_KEY, value)
+
 fun NPC.beginJadTelegraph(style: JadCommittedAttackStyle, onsetTick: Int = GameLoop.tick) {
     require(id == "tztok_jad") { "Jad telegraph state can only be started for tztok_jad, got '$id'." }
     require(style != JadCommittedAttackStyle.None) { "Jad telegraph requires a committed magic or ranged attack style." }
@@ -107,6 +150,12 @@ fun NPC.beginJadTelegraph(style: JadCommittedAttackStyle, onsetTick: Int = GameL
     jadTelegraphState = jadTelegraphStateForStyle(style)
     jadTelegraphStartTick = onsetTick
     jadHitResolveTick = onsetTick + JAD_HIT_RESOLVE_OFFSET_TICKS
+    jadLastTelegraphStartTick = onsetTick
+    jadLastHitResolveTick = jadHitResolveTick
+    jadPrayerCheckTick = -1
+    jadSampledProtectionPrayer = "none"
+    jadProtectedAtPrayerCheck = false
+    jadResolvedDamage = -1
 
     strongQueue(JAD_TELEGRAPH_CLEAR_QUEUE, JAD_HIT_RESOLVE_OFFSET_TICKS) {
         if (jadAttackSequence == sequence) {
@@ -128,6 +177,20 @@ fun NPC.clearJadTelegraph() {
     jadHitResolveTick = -1
 }
 
+fun NPC.recordJadAttackOutcome(target: Character, resolvedDamage: Int, prayerCheckTick: Int = GameLoop.tick) {
+    require(id == "tztok_jad") { "Jad outcome recording can only be used for tztok_jad, got '$id'." }
+
+    jadPrayerCheckTick = prayerCheckTick
+    jadSampledProtectionPrayer = sampledProtectionPrayer(target)
+    jadProtectedAtPrayerCheck =
+        when (jadCommittedAttackStyle) {
+            JadCommittedAttackStyle.Magic -> target.protectMagic()
+            JadCommittedAttackStyle.Ranged -> target.protectRange()
+            JadCommittedAttackStyle.None -> false
+        }
+    jadResolvedDamage = resolvedDamage
+}
+
 fun NPC.jadTelegraphTraceOrNull(): JadTelegraphTrace? {
     if (id != "tztok_jad") {
         return null
@@ -137,7 +200,24 @@ fun NPC.jadTelegraphTraceOrNull(): JadTelegraphTrace? {
         committedAttackStyle = jadCommittedAttackStyle.serializedName(),
         telegraphState = jadTelegraphState.serializedName(),
         telegraphStateCode = jadTelegraphState.encoded,
-        telegraphStartTick = jadTelegraphStartTick,
-        hitResolveTick = jadHitResolveTick,
+        telegraphStartTick = if (jadTelegraphStartTick != -1) jadTelegraphStartTick else jadLastTelegraphStartTick,
+        hitResolveTick = if (jadHitResolveTick != -1) jadHitResolveTick else jadLastHitResolveTick,
+        prayerCheckTick = jadPrayerCheckTick,
+        sampledProtectionPrayer = jadSampledProtectionPrayer,
+        protectedAtPrayerCheck = jadProtectedAtPrayerCheck,
+        resolvedDamage = jadResolvedDamage,
     )
 }
+
+private fun sampledProtectionPrayer(target: Character): String =
+    when (target) {
+        is Player ->
+            when {
+                target.protectMagic() -> "protect_from_magic"
+                target.protectRange() -> "protect_from_missiles"
+                target.protectMelee() -> "protect_from_melee"
+                else -> "none"
+            }
+
+        else -> "none"
+    }

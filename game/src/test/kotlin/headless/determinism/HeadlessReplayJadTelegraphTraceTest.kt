@@ -1,7 +1,6 @@
 import content.area.karamja.tzhaar_city.JAD_HIT_RESOLVE_OFFSET_TICKS
-import content.area.karamja.tzhaar_city.beginJadTelegraphForAttack
+import content.skill.prayer.getActivePrayerVarKey
 import org.junit.jupiter.api.Test
-import world.gregs.voidps.engine.entity.character.npc.NPCs
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
 import kotlin.test.assertTrue
@@ -22,9 +21,7 @@ internal class HeadlessReplayJadTelegraphTraceTest {
                     startWave = 1,
                     stepHook = { stepIndex, _, currentPlayer ->
                         if (stepIndex == -1) {
-                            val jad = NPCs.add("tztok_jad", currentPlayer.tile.add(1, 0))
-                            NPCs.run()
-                            assertTrue(jad.beginJadTelegraphForAttack("magic"))
+                            spawnJadWithTelegraphedAttack(currentPlayer, attackId = "magic")
                         }
                     },
                 )
@@ -38,6 +35,43 @@ internal class HeadlessReplayJadTelegraphTraceTest {
             assertEquals(snapshot.tick, telegraph.telegraphStartTick)
             assertEquals(snapshot.tick + JAD_HIT_RESOLVE_OFFSET_TICKS, telegraph.hitResolveTick)
             assertEquals(1, jadObservation.jadTelegraphState)
+        } finally {
+            runtime.shutdown()
+            resetHeadlessTestRuntime()
+        }
+    }
+
+    @Test
+    fun `replay snapshots carry Jad prayer outcome through hit resolution`() {
+        val runtime = bootstrapHeadlessWithScripts(startWorld = true)
+        try {
+            val player = createHeadlessPlayer("replay-jad-telegraph-outcome")
+            val runner = HeadlessReplayRunner(runtime)
+            val result =
+                runner.run(
+                    player = player,
+                    seed = 630_032L,
+                    actionTrace =
+                        listOf(
+                            HeadlessReplayStep(HeadlessAction.Wait, ticksAfter = JAD_HIT_RESOLVE_OFFSET_TICKS),
+                        ),
+                    startWave = 1,
+                    stepHook = { stepIndex, _, currentPlayer ->
+                        if (stepIndex == -1) {
+                            currentPlayer.addVarbit(currentPlayer.getActivePrayerVarKey(), "protect_from_magic")
+                            spawnJadWithTelegraphedAttack(currentPlayer, attackId = "magic")
+                        }
+                    },
+                )
+
+            val snapshot = result.snapshots.last()
+            val telegraph = assertNotNull(snapshot.jadTelegraph)
+
+            assertEquals("idle", telegraph.telegraphState)
+            assertEquals("protect_from_magic", telegraph.sampledProtectionPrayer)
+            assertTrue(telegraph.protectedAtPrayerCheck)
+            assertEquals(0, telegraph.resolvedDamage)
+            assertTrue(telegraph.prayerCheckTick in (telegraph.telegraphStartTick + 1)..telegraph.hitResolveTick)
         } finally {
             runtime.shutdown()
             resetHeadlessTestRuntime()
