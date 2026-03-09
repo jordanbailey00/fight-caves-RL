@@ -1,0 +1,28 @@
+{
+  "archive_name": "fight_caves_cache_bootstrap.zip",
+  "archive_size_bytes": 162883556,
+  "archive_sha256": "33ce8b2638fd10719578c004533029654b678de9ea40e22060b256977771444d",
+  "source": "temporary Phase 0 hosted-native cache bootstrap artifact from local validated fight-caves-RL data/cache",
+  "parts": [
+    {
+      "name": "fight_caves_cache_bootstrap.zip.part-00",
+      "size_bytes": 52428800,
+      "sha256": "0ac47ea540ca3a5fb070cd63ee1ad06301462b961f5c39aa898e79f51f0deee5"
+    },
+    {
+      "name": "fight_caves_cache_bootstrap.zip.part-01",
+      "size_bytes": 52428800,
+      "sha256": "d57f294dff7e9d3b3b032166a2a30a2f4d6da10fe8222107652900f332e6d0dd"
+    },
+    {
+      "name": "fight_caves_cache_bootstrap.zip.part-02",
+      "size_bytes": 52428800,
+      "sha256": "f263c1f8a69c782c06cc32e5a58757092fb82dd486d5ec2a0b412a43ab9e9bd7"
+    },
+    {
+      "name": "fight_caves_cache_bootstrap.zip.part-03",
+      "size_bytes": 5597156,
+      "sha256": "78d67461ae131c2985ac541e30bfa7defb9b6eae8bef8a2596c3713d10cda7e8"
+    }
+  ]
+}
