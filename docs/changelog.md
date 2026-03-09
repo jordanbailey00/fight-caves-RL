@@ -2,6 +2,35 @@
 
 Append-only log of implementation changes and decisions.
 
+## 2026-03-09 02:30:20 -04:00 - Phase 0 Native-Linux Packet Host Attempt
+
+### Decisions
+1. Added a hosted native-Linux Phase 0 packet workflow in `fight-caves-RL` as a fallback when the `RL` self-hosted Linux runner path is unavailable.
+2. Kept this work strictly inside Phase 0 measurement infrastructure; no simulator/runtime semantics changed.
+3. Treated the failed hosted run as a useful gate result rather than masking it: native-Linux packet generation is still blocked until cache provisioning is reproducible on that host path.
+
+### Changes Made
+1. Added `.github/workflows/phase0_native_linux_packet.yml`:
+   - checks out `fight-caves-RL`, `RL`, and `RSPS`
+   - provisions Java/Python/uv on `ubuntu-latest`
+   - attempts to restore or download the required game cache before running the standalone sim report/profile and the RL Phase 0 packet refresh
+
+### Verification
+1. Hosted native-Linux workflow run created successfully:
+   - run `22841206737`
+2. The run failed before packet generation:
+   - `Verify cache files exist`: failed
+   - `Download game cache files`: skipped
+3. Resulting implication:
+   - the hosted native-Linux path currently lacks a reproducible cache source in this repo context
+   - no new native-Linux Phase 0 packet exists yet
+
+### Current Status
+- Phase 0 native-Linux measurement remains blocked by infrastructure:
+  - `RL` self-hosted Linux runner path is queued/unavailable
+  - hosted `ubuntu-latest` path cannot yet provision the required game cache
+- Phase 1 remains blocked
+
 ## 2026-03-04 21:47:33 -05:00 - Step 0 Baseline Start
 
 ### Decisions
