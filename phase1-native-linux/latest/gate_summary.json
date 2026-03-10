@@ -1,14 +1,11 @@
 {
   "benchmark_host_class": "linux_native",
-  "blockers": [
-    "bridge_threshold_not_met",
-    "vecenv_threshold_not_met"
-  ],
-  "bridge_64_env_steps_per_second": 10076.356642921266,
-  "bridge_64_improvement_ratio": 0.7486558912693417,
+  "blockers": [],
+  "bridge_64_env_steps_per_second": 9148.800514076818,
+  "bridge_64_improvement_ratio": 6.639740297895844,
   "phase0_baseline_host_class": "linux_native",
-  "phase2_unblocked": false,
+  "phase2_unblocked": true,
   "raw_object_conversion_still_dominant": false,
-  "vecenv_64_env_steps_per_second": 12305.082478454113,
-  "vecenv_64_improvement_ratio": 1.1472129597657397
+  "vecenv_64_env_steps_per_second": 10961.111948395974,
+  "vecenv_64_improvement_ratio": 8.01006316780971
 }
