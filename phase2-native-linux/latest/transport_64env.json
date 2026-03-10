@@ -37,39 +37,39 @@
     "pufferlib_version": "3.0.17",
     "replay_mode": "disabled",
     "reward_config_id": "reward_sparse_v0",
-    "rl_commit_sha": "97a49a0b96b1585d2cfaac12b784e805f8b001ed",
+    "rl_commit_sha": "2136c590302b3daf8c544f0aa4d8b90a0a7e58aa",
     "rl_repo": "/home/runner/work/fight-caves-RL/fight-caves-RL/_workspace/RL",
     "rsps_commit_sha": "8ab69d72591030936ae2b4b06372c15fc1653517",
     "rsps_repo": "/home/runner/work/fight-caves-RL/fight-caves-RL/_workspace/RSPS",
     "sim_artifact_path": "/home/runner/work/fight-caves-RL/fight-caves-RL/game/build/distributions/fight-caves-headless-main.zip",
     "sim_artifact_task": ":game:headlessDistZip",
-    "sim_commit_sha": "bb723bf1b89ce29731210a58e4055b4a6bbe562f",
+    "sim_commit_sha": "f0984a78e59fb0b503f1b5d501b45d6872eac72b",
     "sim_repo": "/home/runner/work/fight-caves-RL/fight-caves-RL"
   },
-  "created_at": "2026-03-10T01:19:00.053409+00:00",
+  "created_at": "2026-03-10T01:46:43.070957+00:00",
   "env_count": 64,
   "measurements": [
     {
-      "elapsed_nanos": 525591483,
+      "elapsed_nanos": 376865008,
       "env_count": 64,
-      "env_steps_per_second": 7793.1247603568945,
+      "env_steps_per_second": 10868.613198495734,
       "rounds": 64,
-      "tick_rounds_per_second": 121.76757438057648,
+      "tick_rounds_per_second": 169.82208122649584,
       "total_env_steps": 4096,
       "transport_mode": "pipe_pickle_v1"
     },
     {
-      "elapsed_nanos": 375557529,
+      "elapsed_nanos": 491073297,
       "env_count": 64,
-      "env_steps_per_second": 10906.451565240754,
+      "env_steps_per_second": 8340.913719036937,
       "rounds": 64,
-      "tick_rounds_per_second": 170.41330570688677,
+      "tick_rounds_per_second": 130.32677685995213,
       "total_env_steps": 4096,
       "transport_mode": "shared_memory_v1"
     }
   ],
   "speedup_vs_pipe_pickle": {
     "pipe_pickle_v1": 1.0,
-    "shared_memory_v1": 1.3994965948346092
+    "shared_memory_v1": 0.7674312781865636
   }
 }
