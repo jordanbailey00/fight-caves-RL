@@ -159,6 +159,50 @@ jobs:
       - name: Build canonical headless distribution
         run: ./gradlew --no-daemon :game:headlessDistZip
 
+      - name: Resolve canonical headless distribution path
+        run: |
+          python3 - <<'PY'
+          import shutil
+          from pathlib import Path
+
+          repo_root = Path(".").resolve()
+          expected_root = repo_root / "game" / "build" / "distributions"
+          expected_root.mkdir(parents=True, exist_ok=True)
+
+          matches = sorted(
+              repo_root.glob("**/fight-caves-headless*.zip"),
+              key=lambda candidate: candidate.stat().st_mtime,
+              reverse=True,
+          )
+
+          print("HEADLESS_DISTRIBUTION_CANDIDATES_BEGIN")
+          for match in matches:
+              print(match)
+          print("HEADLESS_DISTRIBUTION_CANDIDATES_END")
+
+          expected_matches = sorted(
+              expected_root.glob("fight-caves-headless*.zip"),
+              key=lambda candidate: candidate.stat().st_mtime,
+              reverse=True,
+          )
+
+          if expected_matches:
+              selected = expected_matches[0]
+          elif matches:
+              selected = matches[0]
+              normalized = expected_root / selected.name
+              if selected.resolve() != normalized.resolve():
+                  shutil.copy2(selected, normalized)
+              selected = normalized
+          else:
+              raise FileNotFoundError(
+                  "No fight-caves-headless*.zip was produced anywhere under the repo root "
+                  "after `:game:headlessDistZip`."
+              )
+
+          print(f"Using canonical headless distribution: {selected}")
+          PY
+
       - name: Refresh native Linux Phase 2 prototype packet
         env:
           FIGHT_CAVES_RL_REPO: ${{ github.workspace }}
