@@ -148,6 +148,17 @@
 - Existing detailed historical execution notes remain in `docs/changelog.md`.
 ## 2026-03-09
 
+- Added a dedicated immutable native-Linux pre-Phase-1 baseline workflow:
+  - `.github/workflows/phase0_native_linux_pre_phase1_baseline.yml`
+- Published the immutable pre-Phase-1 native-Linux baseline packet to:
+  - `codex/phase0-results/phase0-native-linux/immutable/pre-phase1/rl-3e557474f3c6b4e44842da82a971c8f97d521b10__sim-216c1fd2ac31f450f8c599f9ec9454330a4e6b3a`
+- Repointed the hosted Phase 1 gate to that immutable baseline:
+  - `.github/workflows/phase1_native_linux_packet.yml`
+- The final hosted native-Linux Phase 1 gate now passes with:
+  - bridge `64 env = 9148.80` env/s, ratio `6.6397`
+  - vecenv `64 env = 10961.11` env/s, ratio `8.0101`
+  - `phase2_unblocked = true`
+
 - Implemented the sim-owned Phase 1 flat observation emitter:
   - added `game/src/main/kotlin/HeadlessFlatObservationBuilder.kt`
   - extended the headless runtime surface to expose direct flat observations

@@ -1001,4 +1001,30 @@ The previous Step 10 entry contains formatting artifacts from shell escaping. Ca
 
 #### Outcome
 - The native-Linux Phase 1 implementation path is now observable and reproducible.
-- The remaining blocker before Phase 2 is regeneration of an immutable pre-Phase-1 baseline for a clean ratio comparison.
+- That blocker is now resolved by the immutable pre-Phase-1 baseline workflow and the clean rerun against that baseline.
+
+### Immutable Pre-Phase-1 Baseline Publication And Final Gate Decision
+
+#### Decisions
+1. Locked the clean Phase 1 comparison to an immutable pre-Phase-1 native-Linux baseline path instead of any mutable `latest` alias.
+2. Treated the clean rerun against that immutable baseline as the only valid continue-versus-pivot decision for Phase 1.
+3. Approved continuation to Phase 2 because the clean hosted native-Linux gate cleared the defined bridge, vecenv, and profiler thresholds.
+
+#### Changes Made
+1. Added `.github/workflows/phase0_native_linux_pre_phase1_baseline.yml`.
+2. Published the immutable baseline packet under:
+   - `phase0-native-linux/immutable/pre-phase1/rl-3e557474f3c6b4e44842da82a971c8f97d521b10__sim-216c1fd2ac31f450f8c599f9ec9454330a4e6b3a`
+3. Updated `.github/workflows/phase1_native_linux_packet.yml` to fetch that immutable baseline path instead of `phase0-native-linux/latest`.
+
+#### Verification
+1. Immutable pre-Phase-1 native-Linux baseline workflow completed successfully.
+2. Final hosted native-Linux Phase 1 packet completed successfully against the immutable baseline.
+3. Final gate summary reports:
+   - bridge `64 env = 9148.80` env/s, ratio `6.6397`
+   - vecenv `64 env = 10961.11` env/s, ratio `8.0101`
+   - `raw_object_conversion_still_dominant = false`
+   - `phase2_unblocked = true`
+
+#### Outcome
+- Phase 1 is now closed with a clean source-of-truth comparison.
+- Phase 2 is unblocked.
