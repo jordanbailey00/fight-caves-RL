@@ -148,6 +148,14 @@
 - Existing detailed historical execution notes remain in `docs/changelog.md`.
 ## 2026-03-09
 
+- Added the hosted native-Linux Phase 2 packet workflow:
+  - `.github/workflows/phase2_native_linux_packet.yml`
+- Phase 2 native-Linux workflow intent:
+  - build the canonical `:game:headlessDistZip`
+  - refresh the RL-owned Phase 2 transport packet on native Linux
+  - publish `phase2_packet.json` and gate summaries to `codex/phase2-results`
+  - enforce the `WC-P2-03` promotion gate before any production transport swap proceeds
+
 - Added a dedicated immutable native-Linux pre-Phase-1 baseline workflow:
   - `.github/workflows/phase0_native_linux_pre_phase1_baseline.yml`
 - Published the immutable pre-Phase-1 native-Linux baseline packet to:

@@ -2,6 +2,30 @@
 
 Append-only log of implementation changes and decisions.
 
+## 2026-03-09 21:15:00 -04:00 - Phase 2 Native-Linux Transport Promotion Gate
+
+### Decisions
+1. Kept `WC-P2-03` blocked until the low-copy transport proves itself on native Linux, not just on local WSL.
+2. Treated the hosted native-Linux Phase 2 packet as the source-of-truth promotion gate for the subprocess transport swap.
+3. Reused the existing cache/bootstrap and result-publication patterns from the earlier phase workflows instead of inventing a separate publication path.
+
+### Changes Made
+1. Added `.github/workflows/phase2_native_linux_packet.yml`.
+2. Wired the workflow to:
+   - build the canonical `:game:headlessDistZip`
+   - run `RL/scripts/refresh_phase2_packet.py`
+   - summarize the gate into JSON
+   - publish artifacts to `codex/phase2-results`
+   - fail if `wc_p2_03_unblocked` is false
+
+### Verification
+1. Local WSL Phase 2 packet completed successfully via the RL entrypoint.
+2. Local WSL gate remained blocked, which matches the current source-of-truth policy that promotion decisions must come from native Linux.
+
+### Outcome
+1. The native-Linux gate path for `WC-P2-03` is ready to run.
+2. No simulator semantics changed in this batch.
+
 ## 2026-03-09 23:35:00 -04:00 - Phase 1 WC-P1-04 Equivalence Gate Design
 
 ### Decisions
