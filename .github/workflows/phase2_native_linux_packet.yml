@@ -27,6 +27,16 @@ jobs:
       - name: Checkout fight-caves-RL
         uses: actions/checkout@v4
 
+      - name: Checkout cache bootstrap assets
+        uses: actions/checkout@v4
+        with:
+          repository: jordanbailey00/fight-caves-RL
+          ref: ${{ env.CACHE_BOOTSTRAP_BRANCH }}
+          path: _workspace/cache-bootstrap
+          sparse-checkout: |
+            .github/cache-bootstrap
+          sparse-checkout-cone-mode: false
+
       - name: Checkout RL
         uses: actions/checkout@v4
         with:
@@ -100,32 +110,25 @@ jobs:
 
       - name: Bootstrap cache from artifact branch
         if: steps.check-cache-after-restore.outputs.cache_exists != 'true'
-        env:
-          CACHE_BOOTSTRAP_BRANCH: ${{ env.CACHE_BOOTSTRAP_BRANCH }}
         run: |
           python3 - <<'PY'
           import hashlib
           import json
-          import os
-          import urllib.request
           import zipfile
           from pathlib import Path
 
-          branch = os.environ["CACHE_BOOTSTRAP_BRANCH"]
-          base = f"https://raw.githubusercontent.com/jordanbailey00/fight-caves-RL/{branch}/.github/cache-bootstrap"
+          bootstrap_root = Path("_workspace/cache-bootstrap/.github/cache-bootstrap")
+          if not bootstrap_root.exists():
+              raise FileNotFoundError(f"Missing cache bootstrap assets at {bootstrap_root}")
+
           target = Path("data/cache")
           target.mkdir(parents=True, exist_ok=True)
 
-          def fetch_bytes(url: str) -> bytes:
-              req = urllib.request.Request(url, headers={"User-Agent": "codex-phase2-prototype"})
-              with urllib.request.urlopen(req, timeout=60) as resp:
-                  return resp.read()
-
-          manifest = json.loads(fetch_bytes(f"{base}/manifest.json").decode("utf-8"))
+          manifest = json.loads((bootstrap_root / "manifest.json").read_text(encoding="utf-8"))
           archive_path = Path("/tmp") / manifest["archive_name"]
           with archive_path.open("wb") as archive:
               for part in manifest["parts"]:
-                  chunk = fetch_bytes(f"{base}/{part['name']}")
+                  chunk = (bootstrap_root / part["name"]).read_bytes()
                   digest = hashlib.sha256(chunk).hexdigest()
                   if digest != part["sha256"]:
                       raise RuntimeError(
@@ -224,6 +227,12 @@ jobs:
           repo = "jordanbailey00/fight-caves-RL"
           latest = Path("/tmp") / "phase2_results_latest"
           archive = Path("/tmp") / "phase2_results_repo"
+          packet_dir = Path(os.environ["PACKET_DIR"])
+          summary_json = Path(os.environ["SUMMARY_JSON"])
+
+          if not (packet_dir / "phase2_prototype_packet.json").exists():
+              print("Phase 2 prototype packet missing; skipping publish because an earlier step failed.")
+              raise SystemExit(0)
 
           if archive.exists():
               shutil.rmtree(archive)
@@ -246,12 +255,11 @@ jobs:
 
           target_root = archive / "phase2-native-linux" / "latest"
           target_root.mkdir(parents=True, exist_ok=True)
-          packet_dir = Path(os.environ["PACKET_DIR"])
           shutil.copy2(packet_dir / "phase2_prototype_packet.json", target_root / "phase2_prototype_packet.json")
           shutil.copy2(packet_dir / "prototype_sync_v1_16env_disabled.json", target_root / "prototype_sync_v1_16env_disabled.json")
           shutil.copy2(packet_dir / "prototype_sync_v1_64env_disabled.json", target_root / "prototype_sync_v1_64env_disabled.json")
           shutil.copy2(packet_dir / "train_ceiling_16_64.json", target_root / "train_ceiling_16_64.json")
-          shutil.copy2(Path(os.environ["SUMMARY_JSON"]), target_root / "gate_summary.json")
+          shutil.copy2(summary_json, target_root / "gate_summary.json")
 
           subprocess.run(["git", "-C", str(archive), "config", "user.name", "github-actions[bot]"], check=True)
           subprocess.run(
