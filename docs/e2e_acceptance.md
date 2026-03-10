@@ -1,4 +1,4 @@
-﻿# e2e test.md - Final End-to-End Validation for Void Fight Caves Headless 1:1 Parity
+﻿# E2E Acceptance - Fight Caves Headless 1:1 Parity
 
 Run this suite only after all `FCplan.md` steps are complete.
 
@@ -10,7 +10,7 @@ This is the final gate for acceptance.
 
 All must be true before running E2E:
 1. `FCspec.md` is current and approved.
-2. `FCplan.md` steps 0-12 are marked complete.
+2. `FCplan.md` steps 0-13 are marked complete.
 3. Headless and oracle runtimes build successfully.
 4. Required deterministic trace pack exists.
 5. CI and local environment use identical code revision.
@@ -28,14 +28,14 @@ Required trace pack (minimum):
 
 ## 1) Mandatory Command Sequence
 
-Run in order (adapt task names to implemented build tasks):
+Run in order:
 1. `./gradlew clean`
 2. `./gradlew :game:test`
 3. `./gradlew :game:test --tests "*Headless*"`
 4. `./gradlew :game:test --tests "*Parity*"`
 5. `./gradlew :game:test --tests "content.area.karamja.tzhaar_city.TzhaarFightCaveTest"`
 6. `./gradlew :game:headlessDistZip`
-7. `./gradlew :game:e2eTest` (if dedicated task exists)
+7. `./gradlew :game:e2eTest`
 
 If any command fails, stop and resolve before proceeding.
 

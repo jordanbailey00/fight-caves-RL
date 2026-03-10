@@ -31,9 +31,9 @@ cd /home/jordan/code/fight-caves-RL
 Artifacts produced by those entrypoints:
 
 - report log:
-  - `/home/jordan/code/fight-caves-RL/docs/performance_benchmark.log`
+  - `/home/jordan/code/fight-caves-RL/history/performance_benchmark.log`
 - report json:
-  - `/home/jordan/code/fight-caves-RL/docs/performance_benchmark.json`
+  - `/home/jordan/code/fight-caves-RL/history/performance_benchmark.json`
 - clean profile artifacts:
   - `/home/jordan/code/fight-caves-RL/game/build/reports/headless-performance/headless_performance_profile.log`
   - `/home/jordan/code/fight-caves-RL/game/build/reports/headless-performance/headless_performance_profile.json`
@@ -62,7 +62,7 @@ Interpretation:
 ### 1. Existing Pure-JVM Benchmark Artifact
 
 Source:
-- `/home/jordan/code/fight-caves-RL/docs/performance_report.md`
+- `/home/jordan/code/fight-caves-RL/history/performance_report_step11.md`
 
 Existing current-repo artifact values:
 - throughput benchmark: `8891.93` ticks/s

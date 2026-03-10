@@ -15,7 +15,7 @@ internal class ForbiddenPathsAbsentTest {
             assertFalse(Files.exists(path), "Forbidden path exists after prune: $relativePath")
         }
 
-        val pruneReport = root.resolve("docs/repo_prune_report.md")
+        val pruneReport = root.resolve("history/repo_prune_report.md")
         assertTrue(Files.isRegularFile(pruneReport), "Missing Step 13 prune report artifact: $pruneReport")
     }
 }

@@ -129,8 +129,9 @@ Use `./gradlew :game:packageHeadless` when you want the documented validation/ag
 
 - `FCspec.md`: extraction and parity contract.
 - `FCplan.md`: implementation and validation execution plan.
-- `e2e test.md`: full end-to-end acceptance test matrix.
+- `docs/e2e_acceptance.md`: full end-to-end acceptance test matrix.
 - `docs/`: extraction manifest, runtime docs, and change log.
+- `history/`: historical docs and generated benchmark/prune artifacts kept for reference.
 - `config/`: headless manifests and allowlists.
 - `game/src/main/kotlin/`: runtime entrypoints and content scripts.
 - `game/src/test/kotlin/headless/`: headless/parity test suites.

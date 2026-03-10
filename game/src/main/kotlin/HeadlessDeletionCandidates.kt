@@ -61,7 +61,7 @@ object HeadlessDeletionCandidates {
         )
     }
 
-    fun writeMarkdown(report: HeadlessDeletionCandidateReport, output: Path = locateRepositoryRoot().resolve("docs/deletion_candidates.md")): Path {
+    fun writeMarkdown(report: HeadlessDeletionCandidateReport, output: Path = locateRepositoryRoot().resolve("history/deletion_candidates.md")): Path {
         Files.createDirectories(output.parent)
         val markdown =
             buildString {

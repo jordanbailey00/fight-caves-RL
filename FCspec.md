@@ -446,7 +446,7 @@ Step 9 artifacts present:
 Step 10 artifacts present:
 - `game/src/main/kotlin/HeadlessDeletionCandidates.kt`
 - `docs/runtime_pruning.md`
-- `docs/deletion_candidates.md`
+- `history/deletion_candidates.md`
 - `game/src/test/kotlin/headless/pruning/HeadlessPackageStartsWithoutExcludedSystemsTest.kt`
 - `game/src/test/kotlin/headless/pruning/HeadedModeStillPassesBaselineFightCaveTests.kt`
 - `game/src/test/kotlin/headless/pruning/HeadlessDeletionCandidateInventoryTest.kt`
@@ -454,8 +454,8 @@ Step 10 artifacts present:
 
 Step 11 artifacts present:
 - `game/src/main/kotlin/HeadlessBatchStepping.kt`
-- `docs/performance_benchmark.log`
-- `docs/performance_report.md`
+- `history/performance_benchmark.log`
+- `docs/sim_profiler_report.md`
 - `game/src/test/kotlin/headless/performance/HeadlessStepRateBenchmarkTest.kt`
 - `game/src/test/kotlin/headless/performance/HeadlessLongRunStabilityTest.kt`
 - `game/src/test/kotlin/headless/performance/HeadlessBatchSteppingParityTest.kt`
@@ -528,8 +528,8 @@ Step 11 verification status:
   - `ParityHarnessJadHealerScenarioTest`
   - `ParityHarnessTzKekSplitScenarioTest`
 - Performance benchmark artifact generated and validated:
-  - `docs/performance_benchmark.log`
-  - `docs/performance_report.md`
+  - `history/performance_benchmark.log`
+  - `docs/sim_profiler_report.md`
 Step 12 verification status:
 - Passed mandatory acceptance command matrix under Java 21:
   - `./gradlew clean --no-daemon`
@@ -540,7 +540,7 @@ Step 12 verification status:
   - `./gradlew :game:headlessDist --no-daemon`
   - `./gradlew :game:e2eTest --no-daemon`
 - Step 12 artifact generated:
-  - `docs/release_candidate.md`
+  - `history/release_candidate_step12.md`
 
 Step 13 verification status:
 - Passed Step 13 prune tests:
@@ -548,9 +548,9 @@ Step 13 verification status:
   - `ForbiddenPathsAbsentTest`
   - `HeadlessDeletionCandidateInventoryTest`
 - Prune inventory regenerated:
-  - `docs/deletion_candidates.md` (`modules=0`, `codeFiles=872`, `dataFiles=3012`)
+  - `history/deletion_candidates.md` (`modules=0`, `codeFiles=872`, `dataFiles=3012`)
 - Step 13 report artifact updated:
-  - `docs/repo_prune_report.md`
+  - `history/repo_prune_report.md`
 
 Implementation notes added in Steps 5-13:
 - Headless runtime now exposes a deterministic episode reset API that seeds shared RNG and stores `episode_seed`.
@@ -584,7 +584,5 @@ Execution closeout notes:
 
 Environment clarification:
 - Project/test bytecode target is Java 21; run verification tests under a Java 21 runtime.
-
-
 
 

@@ -272,9 +272,9 @@ object HeadlessPerformanceReportGenerator {
         return if (exitCode == 0 && output.isNotBlank()) output else "unknown"
     }
 
-    private fun defaultLogPath(): Path = locateRepositoryRoot().resolve("docs/performance_benchmark.log")
+    private fun defaultLogPath(): Path = locateRepositoryRoot().resolve("history/performance_benchmark.log")
 
-    private fun defaultJsonPath(): Path = locateRepositoryRoot().resolve("docs/performance_benchmark.json")
+    private fun defaultJsonPath(): Path = locateRepositoryRoot().resolve("history/performance_benchmark.json")
 
     private fun siblingJsonPath(path: Path): Path {
         val fileName = path.fileName.toString()

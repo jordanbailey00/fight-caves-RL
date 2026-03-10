@@ -103,7 +103,7 @@
   - `:game:headlessPerformanceProfile`
 - Expanded the sim-side performance harness in:
   - `game/src/test/kotlin/headless/performance/HeadlessPerformanceReportGenerator.kt`
-  - the harness now writes both `docs/performance_benchmark.log` and `docs/performance_benchmark.json`
+  - the harness now writes both `history/performance_benchmark.log` and `history/performance_benchmark.json`
   - the harness now records runtime metadata and a batched headless throughput row
   - the harness now publishes a per-worker ceiling estimate
 - Updated performance harness regression coverage in:
@@ -120,12 +120,12 @@
   - the remaining blocker before Phase 1 is the native-Linux source-of-truth rerun, not missing profiler infrastructure
 - Updated sim-side docs to reflect the new standalone Phase 0 path:
   - `docs/sim_profiler_report.md`
-  - `docs/performance_report.md`
+  - `docs/sim_profiler_report.md`
 
 - Added a sim-side performance audit report in:
   - `docs/sim_profiler_report.md`
 - Recorded the current audit outcome for JVM profiling:
-  - the repo still has a real direct-JVM throughput artifact in `docs/performance_report.md` at about `8.9k` ticks/sec
+  - the repo still has a real direct-JVM throughput artifact in `history/performance_report_step11.md` at about `8.9k` ticks/sec
   - the current WSL host passes `HeadlessStepRateBenchmarkTest`
   - embedded-JVM JFR dump attempts launched from the RL Python benchmark did not dump cleanly on exit
   - Gradle/JUnit JFR capture succeeded but was dominated by Gradle / JUnit / JaCoCo harness noise and did not yield clean headless-symbol CPU samples
@@ -156,7 +156,16 @@
   - headless manifest references
   - current README guidance
   - current end-to-end checklist docs
-- Existing detailed historical execution notes remain in `docs/changelog.md`.
+- Existing detailed historical execution notes remain in `history/detailed_changelog.md`.
+## 2026-03-10
+
+- Pruned and reorganized repo documentation to reduce active-doc clutter:
+  - moved historical extraction/prune/performance docs under `history/`
+  - kept `docs/sim_profiler_report.md` as the canonical current sim-performance document
+  - renamed the active end-to-end acceptance checklist to `docs/e2e_acceptance.md`
+  - kept `changelog.md` as the canonical module changelog
+  - moved the prior detailed execution log to `history/detailed_changelog.md`
+
 ## 2026-03-09
 
 - Added the hosted native-Linux Phase 2 packet workflow:

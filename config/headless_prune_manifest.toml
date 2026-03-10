@@ -2,7 +2,7 @@
 name = "headless-prune-manifest"
 version = "2"
 approved_on = "2026-03-06"
-source_candidates_doc = "docs/deletion_candidates.md"
+source_candidates_doc = "history/deletion_candidates.md"
 
 [paths]
 required = [
@@ -23,7 +23,7 @@ required = [
   "LICENSE",
   "FCplan.md",
   "FCspec.md",
-  "e2e test.md",
+  "docs/e2e_acceptance.md",
   "settings.gradle.kts",
   "gradlew",
   "gradlew.bat"

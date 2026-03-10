@@ -37,7 +37,7 @@ Use this section to track each execution iteration and reduce implementation dri
 
 - [x] Retried local folder rename from parent directory after stopping Gradle daemons.
 - [x] Local folder rename explicitly deferred by owner; directory is open in VSCode and manual rename will be done later.
-- [x] Updated `FCplan.md`, `FCspec.md`, and `docs/changelog.md` to reflect completed vs remaining work at this stopping point.
+- [x] Updated `FCplan.md`, `FCspec.md`, and `history/detailed_changelog.md` to reflect completed vs remaining work at this stopping point.
 - [x] Confirmed Step 2 is the next execution target for tomorrow.
 
 ### Iteration 05 - Step 2 Headless Bootstrap Path (2026-03-05)
@@ -221,7 +221,7 @@ Use this section to track each execution iteration and reduce implementation dri
 - [x] Added deletion candidate inventory generator:
   - `game/src/main/kotlin/HeadlessDeletionCandidates.kt`
   - `:game:generateHeadlessDeletionCandidates`
-  - generated artifact `docs/deletion_candidates.md`
+  - generated artifact `history/deletion_candidates.md`
 - [x] Added headless packaging tasks/artifacts in `game/build.gradle.kts`:
   - `:game:headlessShadowJar` (`fight-caves-headless.jar`, `Main-Class=HeadlessMain`)
   - `headlessDistZip` distribution (`distributionBaseName=fight-caves-headless`)
@@ -255,9 +255,9 @@ Use this section to track each execution iteration and reduce implementation dri
   - `HeadlessBatchSteppingParityTest`
   - `HeadlessPerformanceReportGenerationTest`
 - [x] Generated benchmark artifact:
-  - `docs/performance_benchmark.log`
+  - `history/performance_benchmark.log`
 - [x] Added Step 11 docs artifact:
-  - `docs/performance_report.md`
+  - `docs/sim_profiler_report.md`
 - [x] Re-ran and passed mandatory full Step 9 parity regression matrix post-optimization:
   - `ParityHarnessSingleWaveTraceTest`
   - `ParityHarnessFullRunTraceTest`
@@ -284,7 +284,7 @@ Use this section to track each execution iteration and reduce implementation dri
   - `./gradlew :game:headlessDist --no-daemon` (PASS, ~25s)
   - `./gradlew :game:e2eTest --no-daemon` (PASS, ~2m26s)
 - [x] Published Step 12 release gate artifact:
-  - `docs/release_candidate.md`
+  - `history/release_candidate_step12.md`
 - [x] Step 12 marked complete.
 - [x] Remaining: Step 13 post-prune validation closeout (completed in Iteration 16).
 
@@ -302,13 +302,13 @@ Use this section to track each execution iteration and reduce implementation dri
   - `HeadlessDeletionCandidateInventoryTest`
 - [x] Regenerated deletion-candidate inventory:
   - `./gradlew :game:generateHeadlessDeletionCandidates --no-daemon`
-  - output `docs/deletion_candidates.md` (`modules=0`, `codeFiles=872`, `dataFiles=3012`)
+  - output `history/deletion_candidates.md` (`modules=0`, `codeFiles=872`, `dataFiles=3012`)
 - [x] Updated prune manifest/test contract:
   - `config/headless_prune_manifest.toml` version `2`
   - added `pruned_test_root` + `retained_test_files`
   - updated prune support/assertion tests to enforce retained test-file closure
 - [x] Updated Step 13 report artifact:
-  - `docs/repo_prune_report.md`
+  - `history/repo_prune_report.md`
 - [x] Step 13 marked complete.
 - [x] Remaining: none.
 
@@ -366,7 +366,7 @@ Required tests:
 4. `./gradlew :game:test --tests "content.skill.constitution.*"`
 
 Step artifacts:
-1. `docs/baseline.md` with commit id and pass/fail snapshot.
+1. `history/baseline_step0.md` with commit id and pass/fail snapshot.
 2. CI log artifacts or stored local logs.
 
 Exit criteria:
@@ -634,7 +634,7 @@ Required tests:
 Step artifacts:
 1. headless distribution/build target.
 2. `docs/runtime_pruning.md`.
-3. `docs/deletion_candidates.md`.
+3. `history/deletion_candidates.md`.
 
 Exit criteria:
 - Headless runtime is minimal and functionally complete.
@@ -658,7 +658,7 @@ Required tests:
 3. Mandatory full parity regression rerun.
 
 Step artifacts:
-1. `docs/performance_report.md`.
+1. `docs/sim_profiler_report.md`.
 2. Benchmark output logs.
 
 Exit criteria:
@@ -672,16 +672,16 @@ Spec linkage:
 - `FCspec.md` section 10
 
 Required action items:
-1. Run full end-to-end suite defined in `e2e test.md`.
+1. Run full end-to-end suite defined in `docs/e2e_acceptance.md`.
 2. Verify all mandatory pass criteria and artifact generation.
 3. Freeze release candidate commit.
 4. Publish final implementation notes and known limitations (if any).
 
 Required tests:
-1. Entire `e2e test.md` suite.
+1. Entire `docs/e2e_acceptance.md` suite.
 
 Step artifacts:
-1. `docs/release_candidate.md`.
+1. `history/release_candidate_step12.md`.
 2. test logs and parity artifacts.
 
 Exit criteria:
@@ -696,7 +696,7 @@ Spec linkage:
 
 Required action items:
 1. Freeze a recovery point before deletion (`git tag` + branch) so removed files can be recovered if needed.
-2. Convert `docs/deletion_candidates.md` into an approved deletion list.
+2. Convert `history/deletion_candidates.md` into an approved deletion list.
 3. Physically delete all non-approved files/directories/code/data not required for:
    - headless Fight Caves runtime
    - deterministic replay
@@ -709,10 +709,10 @@ Required action items:
 Required tests:
 1. New test: `ProjectTreeMatchesApprovedManifestTest`.
 2. New test: `ForbiddenPathsAbsentTest`.
-3. Full `e2e test.md` suite (must pass post-prune).
+3. Full `docs/e2e_acceptance.md` suite (must pass post-prune).
 
 Step artifacts:
-1. `docs/repo_prune_report.md` (deleted paths + reason + owner approval).
+1. `history/repo_prune_report.md` (deleted paths + reason + owner approval).
 2. Updated `config/headless_manifest.toml`.
 3. Updated `docs/extraction_manifest.md`.
 
@@ -729,8 +729,6 @@ Exit criteria:
 4. Policy replay into headed RSPS demonstrations.
 
 These tasks are blocked until full 1:1 parity is confirmed.
-
-
 
 
 

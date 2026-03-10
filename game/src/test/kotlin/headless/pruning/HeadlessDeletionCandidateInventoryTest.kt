@@ -27,8 +27,8 @@ internal class HeadlessDeletionCandidateInventoryTest {
     @Test
     fun `committed deletion candidate document contains required sections`() {
         val root = locateRepositoryRoot()
-        val output = root.resolve("docs/deletion_candidates.md")
-        assertTrue(Files.isRegularFile(output), "Missing docs/deletion_candidates.md artifact.")
+        val output = root.resolve("history/deletion_candidates.md")
+        assertTrue(Files.isRegularFile(output), "Missing history/deletion_candidates.md artifact.")
 
         val markdown = Files.readString(output)
         assertTrue(markdown.contains("Candidate Module Directories"))

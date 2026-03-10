@@ -134,8 +134,8 @@ tasks {
         mainClass.set("HeadlessPerformanceReportGenerator")
         workingDir = project.projectDir
         systemProperty("java.awt.headless", "true")
-        val outputLog = rootProject.file("docs/performance_benchmark.log")
-        val outputJson = rootProject.file("docs/performance_benchmark.json")
+        val outputLog = rootProject.file("history/performance_benchmark.log")
+        val outputJson = rootProject.file("history/performance_benchmark.json")
         outputs.files(outputLog, outputJson)
         args(
             "--output-log",
@@ -391,7 +391,6 @@ spotless {
         flexmark()
     }
 }
-
 
 
 

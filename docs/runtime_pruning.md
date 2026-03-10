@@ -42,7 +42,7 @@ New build tasks:
 - `:game:headlessShadowJar`
   - Builds `fight-caves-headless.jar` with `HeadlessMain` as entrypoint.
 - `:game:generateHeadlessDeletionCandidates`
-  - Generates `docs/deletion_candidates.md` from `config/headless_manifest.toml`.
+  - Generates `history/deletion_candidates.md` from `config/headless_manifest.toml`.
 - `:game:packageHeadless`
   - Runs deletion-candidate generation and creates `headlessDistZip`.
 
