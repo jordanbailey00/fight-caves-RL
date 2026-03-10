@@ -17,6 +17,7 @@ env:
   CACHE_VERSION: 1.4.5
   CACHE_BOOTSTRAP_BRANCH: codex/cache-bootstrap
   PHASE0_RESULTS_BRANCH: codex/phase0-results
+  PHASE0_BASELINE_PATH: phase0-native-linux/immutable/pre-phase1/rl-3e557474f3c6b4e44842da82a971c8f97d521b10__sim-216c1fd2ac31f450f8c599f9ec9454330a4e6b3a
 
 jobs:
   phase1-native-linux:
@@ -159,6 +160,7 @@ jobs:
       - name: Download Phase 0 native Linux baseline
         env:
           PHASE0_RESULTS_BRANCH: ${{ env.PHASE0_RESULTS_BRANCH }}
+          PHASE0_BASELINE_PATH: ${{ env.PHASE0_BASELINE_PATH }}
           PHASE0_BASELINE_DIR: ${{ runner.temp }}/phase0_baseline
         run: |
           python3 - <<'PY'
@@ -167,9 +169,10 @@ jobs:
           from pathlib import Path
 
           branch = os.environ["PHASE0_RESULTS_BRANCH"]
+          baseline_path = os.environ["PHASE0_BASELINE_PATH"]
           target = Path(os.environ["PHASE0_BASELINE_DIR"])
           target.mkdir(parents=True, exist_ok=True)
-          base = f"https://raw.githubusercontent.com/jordanbailey00/fight-caves-RL/{branch}/phase0-native-linux/latest"
+          base = f"https://raw.githubusercontent.com/jordanbailey00/fight-caves-RL/{branch}/{baseline_path}"
           files = (
               "gate_summary.json",
               "phase0_packet.json",
