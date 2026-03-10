@@ -1,0 +1,14 @@
+{
+  "benchmark_host_class": "linux_native",
+  "blockers": [
+    "bridge_threshold_not_met",
+    "vecenv_threshold_not_met"
+  ],
+  "bridge_64_env_steps_per_second": 10076.356642921266,
+  "bridge_64_improvement_ratio": 0.7486558912693417,
+  "phase0_baseline_host_class": "linux_native",
+  "phase2_unblocked": false,
+  "raw_object_conversion_still_dominant": false,
+  "vecenv_64_env_steps_per_second": 12305.082478454113,
+  "vecenv_64_improvement_ratio": 1.1472129597657397
+}

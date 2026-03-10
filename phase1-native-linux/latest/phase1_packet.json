@@ -1,0 +1,43 @@
+{
+  "bridge_reports": {
+    "1": "/home/runner/work/_temp/fc_phase1_packet_linux/bridge_1env.json",
+    "16": "/home/runner/work/_temp/fc_phase1_packet_linux/bridge_16env.json",
+    "64": "/home/runner/work/_temp/fc_phase1_packet_linux/bridge_64env.json"
+  },
+  "created_at": "2026-03-10T00:02:23.675186+00:00",
+  "gate_status": {
+    "benchmark_host_class": "linux_native",
+    "blockers": [
+      "bridge_threshold_not_met",
+      "vecenv_threshold_not_met"
+    ],
+    "bridge_64_env_steps_per_second": 10076.356642921266,
+    "bridge_64_improvement_ratio": 0.7486558912693417,
+    "bridge_rows_complete": true,
+    "bridge_threshold_met": false,
+    "phase0_baseline_host_class": "linux_native",
+    "phase2_unblocked": false,
+    "python_profile_present": true,
+    "raw_object_conversion_still_dominant": false,
+    "vecenv_64_env_steps_per_second": 12305.082478454113,
+    "vecenv_64_improvement_ratio": 1.1472129597657397,
+    "vecenv_rows_complete": true,
+    "vecenv_threshold_met": false
+  },
+  "output_dir": "/home/runner/work/_temp/fc_phase1_packet_linux",
+  "phase0_baseline_dir": "/home/runner/work/_temp/phase0_baseline",
+  "python_profile_path": "/home/runner/work/_temp/fc_phase1_packet_linux/python_vec16_steady.prof",
+  "python_profile_summary": {
+    "build_step_buffers_cumulative_seconds": 0.015855496,
+    "flat_observe_cumulative_seconds": 0.063534078,
+    "raw_conversion_cumulative_seconds": 0.032173915000000004,
+    "raw_object_conversion_still_dominant": false,
+    "step_batch_cumulative_seconds": 0.178432273,
+    "total_time_seconds": 0.22967207299999992
+  },
+  "python_profile_top_path": "/home/runner/work/_temp/fc_phase1_packet_linux/python_vec16_top.txt",
+  "vecenv_reports": {
+    "16": "/home/runner/work/_temp/fc_phase1_packet_linux/vecenv_16env.json",
+    "64": "/home/runner/work/_temp/fc_phase1_packet_linux/vecenv_64env.json"
+  }
+}
