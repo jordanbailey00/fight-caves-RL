@@ -2,6 +2,11 @@
 
 ## 2026-03-10
 
+- Completed the hosted native-Linux Phase 2 prototype packet after fixing the branch-scoped packaging contract:
+  - the workflow now validates the packaged headless distribution via `scripts/headless_distribution_contract.py`
+  - the shared Gradle build version now sanitizes `GITHUB_REF_NAME` so branch refs no longer create nested distribution paths
+  - the source-of-truth packet completed successfully on `ubuntu-latest` using:
+    - `fight-caves-headless-codex-phase2-prototype-native-linux.zip`
 - Reproduced the hosted headless-distribution artifact bug locally with a repo-owned contract harness:
   - added `scripts/headless_distribution_contract.py`
   - validated the exact downstream contract under `game/build/distributions/fight-caves-headless*.zip`
