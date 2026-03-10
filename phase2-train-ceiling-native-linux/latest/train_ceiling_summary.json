@@ -1,0 +1,11 @@
+{
+  "benchmark_host_class": "linux_native",
+  "evaluate_seconds_64_env": 28.636085245999993,
+  "final_evaluate_seconds_64_env": 28.602010141999926,
+  "train_ceiling_16_env_sps": 74.66798375360746,
+  "train_ceiling_4_env_sps": 94.96735192175362,
+  "train_ceiling_64_env_sps": 68.4308362283043,
+  "train_ceiling_ratio_64_vs_16": 0.9164682476778165,
+  "train_ceiling_ratio_64_vs_4": 0.7205722265972676,
+  "train_seconds_64_env": 62.47401051999998
+}
