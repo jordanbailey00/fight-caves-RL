@@ -14,7 +14,19 @@ plugins {
 }
 
 group = "world.gregs.void"
-version = System.getenv("GITHUB_REF_NAME") ?: "dev"
+
+fun sanitizeBuildVersion(raw: String?): String {
+    val candidate = raw ?: return "dev"
+    val sanitized =
+        candidate
+            .map { character ->
+                if (character.isLetterOrDigit() || character in "._-") character else '-'
+            }.joinToString("")
+            .trim('.', '-')
+    return sanitized.ifEmpty { "dev" }
+}
+
+version = sanitizeBuildVersion(System.getenv("GITHUB_REF_NAME"))
 
 val java21 = JavaLanguageVersion.of(21)
 val javaToolchains = extensions.getByType<JavaToolchainService>()

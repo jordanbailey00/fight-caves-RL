@@ -1,5 +1,19 @@
 # changelog.md
 
+## 2026-03-10
+
+- Reproduced the hosted headless-distribution artifact bug locally with a repo-owned contract harness:
+  - added `scripts/headless_distribution_contract.py`
+  - validated the exact downstream contract under `game/build/distributions/fight-caves-headless*.zip`
+  - confirmed the workflow YAML locally with `act --validate` before returning to hosted reruns
+- Fixed the root cause in shared Gradle versioning:
+  - `buildSrc/src/main/kotlin/shared.gradle.kts` now sanitizes `GITHUB_REF_NAME` before assigning `project.version`
+  - branch refs like `codex/phase2-prototype-native-linux` no longer turn `headlessDistZip` into a nested path under `game/build/distributions/`
+- Hardened the branch-scoped `Phase 2 Native Linux Packet` workflow for the prototype rerun:
+  - replaced the raw GitHub cache-bootstrap download with a checkout of the cache-bootstrap branch
+  - made result-summary publishing skip cleanly when the packet is absent
+  - switched the workflow to the repo-owned `headless_distribution_contract.py` harness instead of inline packaging logic
+
 ## 2026-03-09
 
 - Added a hosted native-Linux train-ceiling workflow for the Phase 2 pivot:

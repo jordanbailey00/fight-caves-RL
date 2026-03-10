@@ -159,85 +159,11 @@ jobs:
         working-directory: _workspace/RL
         run: uv sync --group dev --group train --python 3.11
 
-      - name: Build canonical headless distribution
-        run: ./gradlew --no-daemon :game:headlessDistZip :game:installHeadlessDist
-
-      - name: Resolve canonical headless distribution path
+      - name: Build and validate canonical headless distribution contract
         env:
           GAME_VERSION: ${{ env.game_version }}
         run: |
-          python3 - <<'PY'
-          import os
-          import posixpath
-          import shutil
-          import zipfile
-          from pathlib import Path
-
-          repo_root = Path(".").resolve()
-          expected_root = repo_root / "game" / "build" / "distributions"
-          expected_root.mkdir(parents=True, exist_ok=True)
-          install_root = repo_root / "game" / "build" / "install" / "fight-caves-headless"
-          safe_game_version = "".join(
-              character if character.isalnum() or character in "._-" else "-"
-              for character in os.environ["GAME_VERSION"]
-          ).strip(".-")
-          if not safe_game_version:
-              safe_game_version = "dev"
-          expected_name = f"fight-caves-headless-{safe_game_version}.zip"
-
-          matches = sorted(
-              repo_root.glob("**/fight-caves-headless*.zip"),
-              key=lambda candidate: candidate.stat().st_mtime,
-              reverse=True,
-          )
-
-          print("HEADLESS_DISTRIBUTION_CANDIDATES_BEGIN")
-          for match in matches:
-              print(match)
-          print("HEADLESS_DISTRIBUTION_CANDIDATES_END")
-
-          expected_matches = sorted(
-              expected_root.glob("fight-caves-headless*.zip"),
-              key=lambda candidate: candidate.stat().st_mtime,
-              reverse=True,
-          )
-
-          if expected_matches:
-              selected = expected_matches[0]
-          elif matches:
-              selected = matches[0]
-              normalized = expected_root / selected.name
-              if selected.resolve() != normalized.resolve():
-                  shutil.copy2(selected, normalized)
-              selected = normalized
-          elif install_root.is_dir():
-              selected = expected_root / expected_name
-              prefix = selected.stem
-              with zipfile.ZipFile(selected, "w", compression=zipfile.ZIP_DEFLATED) as archive:
-                  for path in sorted(install_root.rglob("*")):
-                      rel = path.relative_to(install_root)
-                      arcname = posixpath.join(prefix, rel.as_posix())
-                      if path.is_dir():
-                          archive.writestr(arcname.rstrip("/") + "/", "")
-                      else:
-                          archive.write(path, arcname=arcname)
-          else:
-              raise FileNotFoundError(
-                  "No fight-caves-headless*.zip was produced anywhere under the repo root "
-                  "after `:game:headlessDistZip`, and the install-tree fallback "
-                  f"{install_root} was also absent."
-              )
-
-          with zipfile.ZipFile(selected) as archive:
-              members = set(archive.namelist())
-          jar_member = f"{selected.stem}/fight-caves-headless.jar"
-          if jar_member not in members:
-              raise FileNotFoundError(
-                  f"Canonical headless distribution is missing {jar_member}: {selected}"
-              )
-
-          print(f"Using canonical headless distribution: {selected}")
-          PY
+          python3 scripts/headless_distribution_contract.py --repo-root . --game-version "${GAME_VERSION}" --build
 
       - name: Refresh native Linux Phase 2 prototype packet
         env:
