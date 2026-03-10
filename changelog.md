@@ -158,3 +158,11 @@
 - Added the hosted native-Linux Phase 1 gate workflow:
   - `.github/workflows/phase1_native_linux_packet.yml`
 - Phase 1 implementation is now ready for source-of-truth native-Linux gate review; no combat semantics changed in this batch.
+- Hardened the hosted native-Linux workflow path:
+  - Phase 0 results publication now publishes the full baseline packet directory, not just the top-level summaries
+  - Phase 1 results publication now captures packet stdout/stderr/meta on failure
+  - Phase 1 results publication now creates `codex/phase1-results` robustly on first publish
+- Executed the hosted native-Linux Phase 1 packet end to end:
+  - bridge and vecenv rows are published
+  - steady-state Python profile is published
+  - the remaining blocker is a contaminated `phase0-results/latest` comparison baseline, not a failing Phase 1 packet implementation

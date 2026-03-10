@@ -972,3 +972,33 @@ The previous Step 10 entry contains formatting artifacts from shell escaping. Ca
 
 #### Outcome
 - Phase 1 sim-side flat emitter implementation is in place and certification coverage has started.
+
+### Phase 1 Native-Linux Gate Execution And Workflow Hardening
+
+#### Decisions
+1. Treated the first hosted Phase 1 failures as workflow-path diagnostics problems first, not as evidence that the flat-path implementation itself was wrong.
+2. Published the full Phase 0 packet directory into `codex/phase0-results` because the Phase 1 gate needs the individual baseline row files, not only `gate_summary.json`.
+3. Preserved the hosted Phase 1 packet stderr/stdout/meta on failure by publishing them to `codex/phase1-results`.
+4. Treated the current native-Linux ratio gate as invalid because the active `phase0-results/latest` baseline was republished after the Phase 1 code landed.
+
+#### Changes Made
+1. Hardened `.github/workflows/phase0_native_linux_packet.yml` to publish the full baseline packet contents.
+2. Hardened `.github/workflows/phase1_native_linux_packet.yml` to:
+   - fetch the full Phase 0 baseline set
+   - preserve packet failure diagnostics
+   - create the `codex/phase1-results` branch reliably on first publish
+3. Used the published Phase 1 diagnostics to identify the hosted-only RL packet bug in `scripts/refresh_phase1_packet.py` and confirm the later end-to-end packet success.
+
+#### Verification
+1. Hosted Phase 0 baseline republish completed successfully.
+2. Hosted Phase 1 reruns eventually completed the packet and published:
+   - `bridge_*.json`
+   - `vecenv_*.json`
+   - `phase1_packet.json`
+   - `gate_summary.json`
+   - `python_vec16_top.txt`
+3. The final hosted Phase 1 gate failed only at the enforcement step, with packet generation and publication succeeding.
+
+#### Outcome
+- The native-Linux Phase 1 implementation path is now observable and reproducible.
+- The remaining blocker before Phase 2 is regeneration of an immutable pre-Phase-1 baseline for a clean ratio comparison.
