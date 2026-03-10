@@ -177,7 +177,13 @@ jobs:
           expected_root = repo_root / "game" / "build" / "distributions"
           expected_root.mkdir(parents=True, exist_ok=True)
           install_root = repo_root / "game" / "build" / "install" / "fight-caves-headless"
-          expected_name = f"fight-caves-headless-{os.environ['GAME_VERSION']}.zip"
+          safe_game_version = "".join(
+              character if character.isalnum() or character in "._-" else "-"
+              for character in os.environ["GAME_VERSION"]
+          ).strip(".-")
+          if not safe_game_version:
+              safe_game_version = "dev"
+          expected_name = f"fight-caves-headless-{safe_game_version}.zip"
 
           matches = sorted(
               repo_root.glob("**/fight-caves-headless*.zip"),
