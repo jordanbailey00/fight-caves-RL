@@ -2,6 +2,17 @@
 
 ## 2026-03-09
 
+- Added a hosted native-Linux train-ceiling workflow for the Phase 2 pivot:
+  - `.github/workflows/phase2_native_linux_train_ceiling.yml`
+- The new workflow:
+  - reuses the existing hosted cache/bootstrap path
+  - builds the canonical `:game:headlessDistZip`
+  - runs the RL-owned fake-env learner-ceiling benchmark on native Linux
+  - publishes results to `codex/phase2-results/phase2-train-ceiling-native-linux/latest`
+- Purpose:
+  - prove whether the current trainer loop is already the dominant blocker on the source-of-truth host
+  - avoid continuing Phase 2 transport promotion work blindly if the train loop itself is now flattening throughput
+
 - Completed `WC-P1-04` from the workspace optimization plan.
 - Added the sim-owned certification-gate source of truth:
   - `docs/raw_flat_equivalence_plan.md`

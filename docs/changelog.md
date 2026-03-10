@@ -4,6 +4,29 @@ Append-only log of implementation changes and decisions.
 
 ## 2026-03-09 21:15:00 -04:00 - Phase 2 Native-Linux Transport Promotion Gate
 
+## 2026-03-10 02:35:00 -04:00 - Phase 2 Native-Linux Train Ceiling Workflow
+
+### Decisions
+1. Added a hosted native-Linux learner-ceiling workflow before any Phase 2 transport promotion decision is revisited.
+2. Reused the existing hosted cache/bootstrap and results-publication path rather than inventing a separate manual benchmark process.
+3. Treated the learner-ceiling benchmark as diagnostic only:
+   - it should publish evidence
+   - it should not enforce a hard gate on its own
+
+### Changes Made
+1. Added `.github/workflows/phase2_native_linux_train_ceiling.yml`.
+2. Wired the workflow to:
+   - build the canonical `:game:headlessDistZip`
+   - run `RL/scripts/benchmark_train_ceiling.py`
+   - summarize the `4 / 16 / 64 env` fake-env ceiling rows
+   - publish results to `codex/phase2-results/phase2-train-ceiling-native-linux/latest`
+
+### Outcome
+1. The workspace now has a source-of-truth hosted path to measure whether the trainer loop itself is flattening throughput on native Linux.
+2. No simulator semantics changed in this batch.
+
+## 2026-03-09 21:15:00 -04:00 - Phase 2 Native-Linux Transport Promotion Gate
+
 ### Decisions
 1. Kept `WC-P2-03` blocked until the low-copy transport proves itself on native Linux, not just on local WSL.
 2. Treated the hosted native-Linux Phase 2 packet as the source-of-truth promotion gate for the subprocess transport swap.
