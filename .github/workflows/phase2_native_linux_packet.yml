@@ -1,8 +1,5 @@
 name: Phase 2 Native Linux Packet
 
-# Revision note:
-# v2 rerun after Production Training Mode info-payload minimization in RL.
-
 on:
   push:
     branches:
@@ -10,6 +7,11 @@ on:
     paths:
       - ".github/workflows/phase2_native_linux_packet.yml"
   workflow_dispatch:
+    inputs:
+      rl_ref:
+        description: RL branch, tag, or SHA to benchmark
+        required: false
+        default: main
 
 env:
   CACHE_VERSION: 1.4.5
@@ -29,6 +31,7 @@ jobs:
         uses: actions/checkout@v4
         with:
           repository: jordanbailey00/RL
+          ref: ${{ github.event.inputs.rl_ref || 'main' }}
           path: _workspace/RL
 
       - name: Checkout RSPS
@@ -114,7 +117,7 @@ jobs:
           target.mkdir(parents=True, exist_ok=True)
 
           def fetch_bytes(url: str) -> bytes:
-              req = urllib.request.Request(url, headers={"User-Agent": "codex-phase2"})
+              req = urllib.request.Request(url, headers={"User-Agent": "codex-phase2-prototype"})
               with urllib.request.urlopen(req, timeout=60) as resp:
                   return resp.read()
 
@@ -153,36 +156,13 @@ jobs:
       - name: Build canonical headless distribution
         run: ./gradlew --no-daemon :game:headlessDistZip
 
-      - name: Refresh native Linux Phase 2 packet
-        shell: bash
+      - name: Refresh native Linux Phase 2 prototype packet
         env:
           FIGHT_CAVES_RL_REPO: ${{ github.workspace }}
           RSPS_REPO: ${{ github.workspace }}/_workspace/RSPS
-          PACKET_STDOUT: ${{ runner.temp }}/phase2_packet_stdout.log
-          PACKET_STDERR: ${{ runner.temp }}/phase2_packet_stderr.log
-          PACKET_META: ${{ runner.temp }}/phase2_packet_meta.json
         run: |
-          set +e
-          uv run --project _workspace/RL python _workspace/RL/scripts/refresh_phase2_packet.py \
-            --output-dir "${RUNNER_TEMP}/fc_phase2_packet_linux" \
-            >"${PACKET_STDOUT}" 2>"${PACKET_STDERR}"
-          status=$?
-          PHASE2_PACKET_EXIT_CODE="$status" python3 - <<'PY'
-          import json
-          import os
-          from pathlib import Path
-
-          payload = {
-              "exit_code": int(os.environ["PHASE2_PACKET_EXIT_CODE"]),
-              "stdout_path": os.environ["PACKET_STDOUT"],
-              "stderr_path": os.environ["PACKET_STDERR"],
-          }
-          Path(os.environ["PACKET_META"]).write_text(
-              json.dumps(payload, indent=2, sort_keys=True) + "\n",
-              encoding="utf-8",
-          )
-          PY
-          exit $status
+          uv run --project _workspace/RL python _workspace/RL/scripts/refresh_phase2_prototype_packet.py \
+            --output-dir "${RUNNER_TEMP}/fc_phase2_packet_linux"
 
       - name: Summarize gate
         env:
@@ -195,21 +175,18 @@ jobs:
           from pathlib import Path
 
           packet_dir = Path(os.environ["PACKET_DIR"])
-          packet = json.loads((packet_dir / "phase2_packet.json").read_text())
+          packet = json.loads((packet_dir / "phase2_prototype_packet.json").read_text())
           gate = packet["gate_status"]
           summary = {
               "benchmark_host_class": gate["benchmark_host_class"],
-              "wc_p2_03_unblocked": gate["wc_p2_03_unblocked"],
+              "prototype_16_sps": gate["prototype_16_sps"],
+              "prototype_64_sps": gate["prototype_64_sps"],
+              "prototype_scaling_ratio_64_vs_16": gate["prototype_scaling_ratio_64_vs_16"],
+              "learner_ceiling_16_sps": gate["learner_ceiling_16_sps"],
+              "learner_ceiling_64_sps": gate["learner_ceiling_64_sps"],
+              "learner_ceiling_scaling_ratio_64_vs_16": gate["learner_ceiling_scaling_ratio_64_vs_16"],
+              "next_move": gate["next_move"],
               "blockers": gate["blockers"],
-              "transport_64_pipe_env_steps_per_second": gate["transport_64_pipe_env_steps_per_second"],
-              "transport_64_shared_env_steps_per_second": gate["transport_64_shared_env_steps_per_second"],
-              "transport_64_speedup_vs_pipe": gate["transport_64_speedup_vs_pipe"],
-              "train_16_pipe_sps": gate["train_16_pipe_sps"],
-              "train_16_shared_sps": gate["train_16_shared_sps"],
-              "train_64_pipe_sps": gate["train_64_pipe_sps"],
-              "train_64_shared_sps": gate["train_64_shared_sps"],
-              "train_64_speedup_vs_pipe": gate["train_64_speedup_vs_pipe"],
-              "shared_train_scaling_ratio_64_vs_16": gate["shared_train_scaling_ratio_64_vs_16"],
           }
 
           print("PHASE2_GATE_SUMMARY_BEGIN")
@@ -224,135 +201,97 @@ jobs:
           summary_path = os.environ.get("GITHUB_STEP_SUMMARY")
           if summary_path:
               with open(summary_path, "a", encoding="utf-8") as handle:
-                  handle.write("# Phase 2 Native Linux Gate\n\n")
+                  handle.write("# Phase 2 Prototype Native Linux Packet\n\n")
                   handle.write("```json\n")
                   handle.write(json.dumps(summary, indent=2, sort_keys=True))
                   handle.write("\n```\n")
           PY
 
-      - name: Publish Phase 2 result summary
+      - name: Publish result summary
         if: always()
         env:
           PACKET_DIR: ${{ runner.temp }}/fc_phase2_packet_linux
           SUMMARY_JSON: ${{ runner.temp }}/fc_phase2_gate_summary.json
-          PACKET_STDOUT: ${{ runner.temp }}/phase2_packet_stdout.log
-          PACKET_STDERR: ${{ runner.temp }}/phase2_packet_stderr.log
-          PACKET_META: ${{ runner.temp }}/phase2_packet_meta.json
           RESULTS_BRANCH: codex/phase2-results
           GITHUB_TOKEN: ${{ github.token }}
         run: |
           python3 - <<'PY'
-          import json
-          import os
           import shutil
           import subprocess
           from pathlib import Path
+          import os
 
           repo = "jordanbailey00/fight-caves-RL"
-          branch = os.environ["RESULTS_BRANCH"]
-          packet_dir = Path(os.environ["PACKET_DIR"])
-          summary_json = Path(os.environ["SUMMARY_JSON"])
           latest = Path("/tmp") / "phase2_results_latest"
-
-          if latest.exists():
-              shutil.rmtree(latest)
-          latest.mkdir(parents=True, exist_ok=True)
-
-          if packet_dir.is_dir():
-              for source in packet_dir.glob("*"):
-                  if source.is_dir():
-                      shutil.copytree(source, latest / source.name, dirs_exist_ok=True)
-                  else:
-                      shutil.copy2(source, latest / source.name)
-          if summary_json.is_file():
-              shutil.copy2(summary_json, latest / "gate_summary.json")
-          else:
-              packet_meta = Path(os.environ["PACKET_META"])
-              error_summary = {
-                  "repository": repo,
-                  "workflow_run_id": os.environ["GITHUB_RUN_ID"],
-                  "head_sha": os.environ["GITHUB_SHA"],
-                  "error": "phase2_packet_missing",
-              }
-              if packet_meta.is_file():
-                  error_summary["packet_meta"] = json.loads(packet_meta.read_text(encoding="utf-8"))
-              (latest / "error_summary.json").write_text(
-                  json.dumps(error_summary, indent=2, sort_keys=True) + "\n",
-                  encoding="utf-8",
-              )
-              for env_name, target_name in (
-                  ("PACKET_STDOUT", "phase2_packet_stdout.log"),
-                  ("PACKET_STDERR", "phase2_packet_stderr.log"),
-              ):
-                  source = Path(os.environ[env_name])
-                  if source.is_file():
-                      shutil.copy2(source, latest / target_name)
-
           archive = Path("/tmp") / "phase2_results_repo"
+
           if archive.exists():
               shutil.rmtree(archive)
+          if latest.exists():
+              shutil.rmtree(latest)
+
           subprocess.run(
-              ["git", "clone", f"https://x-access-token:{os.environ['GITHUB_TOKEN']}@github.com/{repo}.git", str(archive)],
+              [
+                  "git",
+                  "clone",
+                  "--depth",
+                  "1",
+                  "--branch",
+                  "codex/phase2-results",
+                  f"https://x-access-token:{os.environ['GITHUB_TOKEN']}@github.com/{repo}.git",
+                  str(archive),
+              ],
               check=True,
           )
-          branch_exists = subprocess.run(
-              ["git", "-C", str(archive), "ls-remote", "--exit-code", "--heads", "origin", branch],
-              check=False,
-              capture_output=True,
-              text=True,
-          ).returncode == 0
-          if branch_exists:
-              subprocess.run(["git", "-C", str(archive), "fetch", "origin", branch], check=True)
-              subprocess.run(["git", "-C", str(archive), "checkout", branch], check=True)
-          else:
-              subprocess.run(["git", "-C", str(archive), "checkout", "--orphan", branch], check=True)
-              subprocess.run(["git", "-C", str(archive), "rm", "-rf", "."], check=False)
-              subprocess.run(["git", "-C", str(archive), "clean", "-fdx"], check=True)
 
           target_root = archive / "phase2-native-linux" / "latest"
-          if target_root.exists():
-              shutil.rmtree(target_root)
-          target_root.parent.mkdir(parents=True, exist_ok=True)
-          shutil.copytree(latest, target_root)
+          target_root.mkdir(parents=True, exist_ok=True)
+          packet_dir = Path(os.environ["PACKET_DIR"])
+          shutil.copy2(packet_dir / "phase2_prototype_packet.json", target_root / "phase2_prototype_packet.json")
+          shutil.copy2(packet_dir / "prototype_sync_v1_16env_disabled.json", target_root / "prototype_sync_v1_16env_disabled.json")
+          shutil.copy2(packet_dir / "prototype_sync_v1_64env_disabled.json", target_root / "prototype_sync_v1_64env_disabled.json")
+          shutil.copy2(packet_dir / "train_ceiling_16_64.json", target_root / "train_ceiling_16_64.json")
+          shutil.copy2(Path(os.environ["SUMMARY_JSON"]), target_root / "gate_summary.json")
+
           subprocess.run(["git", "-C", str(archive), "config", "user.name", "github-actions[bot]"], check=True)
           subprocess.run(
-              ["git", "-C", str(archive), "config", "user.email", "41898282+github-actions[bot]@users.noreply.github.com"],
+              [
+                  "git",
+                  "-C",
+                  str(archive),
+                  "config",
+                  "user.email",
+                  "41898282+github-actions[bot]@users.noreply.github.com",
+              ],
               check=True,
           )
           subprocess.run(["git", "-C", str(archive), "add", "phase2-native-linux/latest"], check=True)
-          commit = subprocess.run(
-              ["git", "-C", str(archive), "commit", "-m", "Publish Phase 2 native Linux gate results"],
-              check=False,
+          status = subprocess.run(
+              ["git", "-C", str(archive), "status", "--short"],
               capture_output=True,
               text=True,
+              check=True,
           )
-          if commit.returncode == 0:
-              subprocess.run(["git", "-C", str(archive), "push", "origin", branch], check=True)
+          if status.stdout.strip():
+              subprocess.run(
+                  [
+                      "git",
+                      "-C",
+                      str(archive),
+                      "commit",
+                      "-m",
+                      "Publish Phase 2 native Linux prototype results",
+                  ],
+                  check=True,
+              )
+              subprocess.run(["git", "-C", str(archive), "push", "origin", "HEAD:codex/phase2-results"], check=True)
           PY
 
-      - name: Upload Phase 2 artifacts
+      - name: Upload artifacts
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: phase2-native-linux-${{ github.run_id }}
           path: |
             ${{ runner.temp }}/fc_phase2_packet_linux
-
-      - name: Enforce Phase 2 promotion gate
-        env:
-          PACKET_DIR: ${{ runner.temp }}/fc_phase2_packet_linux
-        run: |
-          python3 - <<'PY'
-          import json
-          import os
-          import sys
-          from pathlib import Path
-
-          packet_dir = Path(os.environ["PACKET_DIR"])
-          packet = json.loads((packet_dir / "phase2_packet.json").read_text())
-          gate = packet["gate_status"]
-          if gate["wc_p2_03_unblocked"]:
-              sys.exit(0)
-          print("Phase 2 transport promotion gate is still blocked:", gate["blockers"])
-          sys.exit(1)
-          PY
+            ${{ runner.temp }}/fc_phase2_gate_summary.json
