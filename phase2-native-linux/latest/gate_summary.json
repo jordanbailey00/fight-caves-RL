@@ -1,18 +1,11 @@
 {
   "benchmark_host_class": "linux_native",
-  "blockers": [
-    "transport_signal_too_weak",
-    "train_signal_too_weak",
-    "shared_train_scaling_too_weak"
-  ],
-  "shared_train_scaling_ratio_64_vs_16": 0.9979223130059505,
-  "train_16_pipe_sps": 74.05029573347288,
-  "train_16_shared_sps": 75.00844454994177,
-  "train_64_pipe_sps": 75.02531127974174,
-  "train_64_shared_sps": 74.85260048025647,
-  "train_64_speedup_vs_pipe": 0.9976979662391363,
-  "transport_64_pipe_env_steps_per_second": 10868.613198495734,
-  "transport_64_shared_env_steps_per_second": 8340.913719036937,
-  "transport_64_speedup_vs_pipe": 0.7674312781865636,
-  "wc_p2_03_unblocked": false
+  "blockers": [],
+  "learner_ceiling_16_sps": 81.63602284122744,
+  "learner_ceiling_64_sps": 73.38622938997233,
+  "learner_ceiling_scaling_ratio_64_vs_16": 0.898944201785773,
+  "next_move": "continue_trainer_redesign",
+  "prototype_16_sps": 469.9215036030257,
+  "prototype_64_sps": 341.4324309950851,
+  "prototype_scaling_ratio_64_vs_16": 0.726573328475549
 }

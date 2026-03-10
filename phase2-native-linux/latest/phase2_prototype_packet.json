@@ -1,0 +1,22 @@
+{
+  "created_at": "2026-03-10T20:28:05.203679+00:00",
+  "gate_status": {
+    "benchmark_host_class": "linux_native",
+    "blockers": [],
+    "learner_ceiling_16_sps": 81.63602284122744,
+    "learner_ceiling_64_sps": 73.38622938997233,
+    "learner_ceiling_rows_complete": true,
+    "learner_ceiling_scaling_ratio_64_vs_16": 0.898944201785773,
+    "next_move": "continue_trainer_redesign",
+    "production_rows_complete": true,
+    "prototype_16_sps": 469.9215036030257,
+    "prototype_64_sps": 341.4324309950851,
+    "prototype_scaling_ratio_64_vs_16": 0.726573328475549
+  },
+  "learner_ceiling_report": "/home/runner/work/_temp/fc_phase2_packet_linux/train_ceiling_16_64.json",
+  "output_dir": "/home/runner/work/_temp/fc_phase2_packet_linux",
+  "production_reports": {
+    "16": "/home/runner/work/_temp/fc_phase2_packet_linux/prototype_sync_v1_16env_disabled.json",
+    "64": "/home/runner/work/_temp/fc_phase2_packet_linux/prototype_sync_v1_64env_disabled.json"
+  }
+}
