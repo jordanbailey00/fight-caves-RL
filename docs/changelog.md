@@ -21,10 +21,16 @@ Append-only log of implementation changes and decisions.
 ### Verification
 1. Local WSL Phase 2 packet completed successfully via the RL entrypoint.
 2. Local WSL gate remained blocked, which matches the current source-of-truth policy that promotion decisions must come from native Linux.
+3. Hosted native-Linux packet run `22882424149` completed packet generation, summary publication, and artifact upload successfully.
 
 ### Outcome
 1. The native-Linux gate path for `WC-P2-03` is ready to run.
 2. No simulator semantics changed in this batch.
+3. After the first hosted run:
+   - transport `64 env` cleared the promotion threshold at `1.3995x`
+   - disabled train `64 env` did not clear the required `1.10x` threshold
+   - shared-train `16 -> 64` scaling remained below `1.0x`
+   - `WC-P2-03` remains blocked for real performance reasons, not workflow/plumbing reasons
 
 ## 2026-03-09 23:35:00 -04:00 - Phase 1 WC-P1-04 Equivalence Gate Design
 

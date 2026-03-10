@@ -155,6 +155,14 @@
   - refresh the RL-owned Phase 2 transport packet on native Linux
   - publish `phase2_packet.json` and gate summaries to `codex/phase2-results`
   - enforce the `WC-P2-03` promotion gate before any production transport swap proceeds
+- Executed the first hosted native-Linux Phase 2 packet run:
+  - workflow completed packet generation and publication successfully
+  - final workflow failure came only from the gate enforcement step
+  - published gate result:
+    - transport `64 env`: `1.3995x`
+    - disabled train `64 env`: `1.0048x`
+    - shared-train scaling `64 vs 16`: `0.9534x`
+  - `WC-P2-03` remains blocked because the end-to-end training signal is too weak
 
 - Added a dedicated immutable native-Linux pre-Phase-1 baseline workflow:
   - `.github/workflows/phase0_native_linux_pre_phase1_baseline.yml`
