@@ -1,0 +1,14 @@
+{
+  "baseline_label": "pre-phase1-immutable",
+  "benchmark_host_class": "linux_native",
+  "blockers": [],
+  "native_linux_source_of_truth": true,
+  "performance_source_of_truth": true,
+  "phase1_unblocked": true,
+  "rl_commit_sha": "3e557474f3c6b4e44842da82a971c8f97d521b10",
+  "rsps_commit_sha": "8ab69d72591030936ae2b4b06372c15fc1653517",
+  "sim_batched_env_steps_per_second": 335020.23174092756,
+  "sim_commit_sha": "216c1fd2ac31f450f8c599f9ec9454330a4e6b3a",
+  "sim_single_slot_ticks_per_second": 24206.02794144892,
+  "workers_needed_for_100k": 1
+}

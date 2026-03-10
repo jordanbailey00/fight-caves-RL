@@ -1,0 +1,12 @@
+{
+  "baseline_label": "pre-phase1-immutable",
+  "head_sha": "8cc4dac26e3eabd41c9e71592611e83b87758a32",
+  "packet_present": true,
+  "repository": "jordanbailey00/fight-caves-RL",
+  "rl_commit_sha": "3e557474f3c6b4e44842da82a971c8f97d521b10",
+  "rsps_commit_sha": "8ab69d72591030936ae2b4b06372c15fc1653517",
+  "sim_commit_sha": "216c1fd2ac31f450f8c599f9ec9454330a4e6b3a",
+  "summary_present": true,
+  "workflow_run_attempt": "1",
+  "workflow_run_id": "22880967973"
+}
