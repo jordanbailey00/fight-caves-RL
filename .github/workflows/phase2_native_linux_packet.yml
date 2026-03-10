@@ -1,5 +1,8 @@
 name: Phase 2 Native Linux Packet
 
+# Revision note:
+# v2 rerun after Production Training Mode info-payload minimization in RL.
+
 on:
   push:
     branches:
