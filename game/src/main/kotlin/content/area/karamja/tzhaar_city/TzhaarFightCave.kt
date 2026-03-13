@@ -10,6 +10,7 @@ import content.entity.player.dialogue.type.choice
 import content.entity.player.dialogue.type.intEntry
 import content.entity.player.dialogue.type.npc
 import content.entity.player.inv.item.addOrDrop
+import headless.fast.fightCaveRemainingNpcCount
 import content.quest.clearInstance
 import content.quest.instanceOffset
 import content.quest.smallInstance
@@ -277,7 +278,7 @@ class TzhaarFightCave(
             }
         }
         val ids = waves.npcs(wave)
-        player["fight_cave_remaining"] = ids.sumOf { if (it == "tz_kek" || it == "tz_kek_spawn_point") 2 else 1 }
+        player["fight_cave_remaining"] = fightCaveRemainingNpcCount(ids)
         val rotation = player["fight_cave_rotation", 1]
         val directions = waves.spawns(wave, rotation)
         val offset = player.instanceOffset()
@@ -322,8 +323,6 @@ class TzhaarFightCave(
 
     fun hasFamiliar(player: Player) = false
 }
-
-
 
 
 

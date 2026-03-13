@@ -2,6 +2,11 @@ import content.area.karamja.tzhaar_city.JadTelegraphState
 import content.area.karamja.tzhaar_city.jadTelegraphState
 import content.entity.player.effect.energy.MAX_RUN_ENERGY
 import content.entity.player.effect.energy.runEnergy
+import headless.fast.FIGHT_CAVE_EPISODE_SEED_KEY
+import headless.fast.FIGHT_CAVE_REMAINING_KEY
+import headless.fast.FIGHT_CAVE_ROTATION_KEY
+import headless.fast.FIGHT_CAVE_WAVE_KEY
+import headless.fast.fightCavePrayerPotionDoseCount
 import content.skill.prayer.getActivePrayerVarKey
 import world.gregs.voidps.engine.GameLoop
 import world.gregs.voidps.engine.client.variable.hasClock
@@ -55,6 +60,42 @@ data class HeadlessTrainingFlatObservationV1(
     val values: FloatArray,
 )
 
+data class HeadlessTrainingFlatObservationBatchV1(
+    val schemaId: String = HEADLESS_TRAINING_FLAT_OBSERVATION_SCHEMA_ID,
+    val schemaVersion: Int = HEADLESS_TRAINING_FLAT_OBSERVATION_SCHEMA_VERSION,
+    val dtype: String = HEADLESS_TRAINING_FLAT_OBSERVATION_DTYPE,
+    val featureCount: Int = HEADLESS_TRAINING_FLAT_OBSERVATION_FEATURE_COUNT,
+    val maxVisibleNpcs: Int = HEADLESS_TRAINING_FLAT_OBSERVATION_MAX_VISIBLE_NPCS,
+    val envCount: Int,
+    val values: FloatArray,
+)
+
+fun packFlatObservationBatch(
+    observations: List<HeadlessTrainingFlatObservationV1>,
+): HeadlessTrainingFlatObservationBatchV1 {
+    if (observations.isEmpty()) {
+        return HeadlessTrainingFlatObservationBatchV1(
+            envCount = 0,
+            values = FloatArray(0),
+        )
+    }
+    val featureCount = observations.first().featureCount
+    val packed = FloatArray(observations.size * featureCount)
+    observations.forEachIndexed { envIndex, observation ->
+        require(observation.featureCount == featureCount) {
+            "Flat observation batch feature-count drift: expected $featureCount, got ${observation.featureCount}."
+        }
+        observation.values.copyInto(
+            destination = packed,
+            destinationOffset = envIndex * featureCount,
+        )
+    }
+    return HeadlessTrainingFlatObservationBatchV1(
+        envCount = observations.size,
+        values = packed,
+    )
+}
+
 class HeadlessFlatObservationBuilder(
     private val actionAdapter: HeadlessActionAdapter,
 ) {
@@ -65,7 +106,7 @@ class HeadlessFlatObservationBuilder(
 
         values[0] = HEADLESS_OBSERVATION_SCHEMA_VERSION.toFloat()
         values[1] = GameLoop.tick.toFloat()
-        values[2] = player[EPISODE_SEED_KEY, -1L].toFloat()
+        values[2] = player[FIGHT_CAVE_EPISODE_SEED_KEY, -1L].toFloat()
         values[3] = player.tile.x.toFloat()
         values[4] = player.tile.y.toFloat()
         values[5] = player.tile.level.toFloat()
@@ -86,7 +127,7 @@ class HeadlessFlatObservationBuilder(
         values[20] = if (player.hasClock("combo_delay")) 1f else 0f
         values[21] = if (player.contains("delay") || player.hasClock("stunned")) 1f else 0f
         values[22] = player.inventory.count("shark").toFloat()
-        values[23] = prayerPotionDoseCount(player).toFloat()
+        values[23] = fightCavePrayerPotionDoseCount(player).toFloat()
         val ammoItem = player.equipment[EquipSlot.Ammo.index]
         values[24] = ammoIdCode(ammoItem.id).toFloat()
         values[25] = if (ammoItem.isEmpty()) 0f else ammoItem.amount.toFloat()
@@ -146,22 +187,6 @@ class HeadlessFlatObservationBuilder(
         return HeadlessTrainingFlatObservationV1(values = values)
     }
 
-    private fun prayerPotionDoseCount(player: Player): Int {
-        var doses = 0
-        for (slot in player.inventory.indices) {
-            val item = player.inventory[slot]
-            doses +=
-                when (item.id) {
-                    "prayer_potion_4" -> 4 * item.amount
-                    "prayer_potion_3" -> 3 * item.amount
-                    "prayer_potion_2" -> 2 * item.amount
-                    "prayer_potion_1" -> item.amount
-                    else -> 0
-                }
-        }
-        return doses
-    }
-
     private fun ammoIdCode(ammoId: String): Int =
         HEADLESS_TRAINING_FLAT_AMMO_ID_CODES[ammoId]
             ?: error("Unsupported flat observation ammo id '$ammoId'.")
@@ -170,12 +195,6 @@ class HeadlessFlatObservationBuilder(
         HEADLESS_TRAINING_FLAT_NPC_ID_CODES[npcId]
             ?: error("Unsupported flat observation npc id '$npcId'.")
 
-    companion object {
-        private const val EPISODE_SEED_KEY = "episode_seed"
-        private const val FIGHT_CAVE_WAVE_KEY = "fight_cave_wave"
-        private const val FIGHT_CAVE_ROTATION_KEY = "fight_cave_rotation"
-        private const val FIGHT_CAVE_REMAINING_KEY = "fight_cave_remaining"
-    }
 }
 
 private data class FlatObservedNpc(

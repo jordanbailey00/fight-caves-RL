@@ -11,9 +11,21 @@ interface FightCaveSimulationRuntime {
 
     fun applyFightCaveAction(player: Player, action: HeadlessAction): HeadlessActionResult
 
+    fun applyActionsBatch(players: List<Player>, actions: List<HeadlessAction>): List<HeadlessActionResult> {
+        require(players.size == actions.size) {
+            "Batch action application requires player/action parity: ${players.size} != ${actions.size}."
+        }
+        return players.zip(actions).map { (player, action) ->
+            applyFightCaveAction(player, action)
+        }
+    }
+
     fun observeFightCave(player: Player, includeFutureLeakage: Boolean = false): HeadlessObservationV1
 
     fun observeFightCaveFlat(player: Player): HeadlessTrainingFlatObservationV1
+
+    fun observeFlatBatch(players: List<Player>): HeadlessTrainingFlatObservationBatchV1 =
+        packFlatObservationBatch(players.map(::observeFightCaveFlat))
 
     fun shutdown()
 }

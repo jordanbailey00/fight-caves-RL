@@ -221,7 +221,11 @@ object HeadlessDeletionCandidates {
     private fun locateRepositoryRoot(): Path {
         var current = Paths.get("").toAbsolutePath().normalize()
         while (true) {
-            if (Files.isRegularFile(current.resolve("FCspec.md")) && Files.isRegularFile(current.resolve("config/headless_manifest.toml"))) {
+            if (
+                Files.isRegularFile(current.resolve("settings.gradle.kts")) &&
+                    Files.isDirectory(current.resolve("game")) &&
+                    Files.isRegularFile(current.resolve("config/headless_manifest.toml"))
+            ) {
                 return current
             }
             current = current.parent ?: break

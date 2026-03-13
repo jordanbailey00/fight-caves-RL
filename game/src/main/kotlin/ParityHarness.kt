@@ -1,6 +1,12 @@
 import content.area.karamja.tzhaar_city.JadTelegraphTrace
 import content.area.karamja.tzhaar_city.jadTelegraphTraceOrNull
 import content.quest.instance
+import headless.fast.FastActionCodec
+import headless.fast.FastDecodedAction
+import headless.fast.FastParityTrace
+import headless.fast.FastProtectionPrayer
+import headless.fast.FastRejectionCode
+import headless.fast.FastTerminalStateEvaluator
 import org.koin.core.context.stopKoin
 import world.gregs.voidps.engine.GameLoop
 import world.gregs.voidps.engine.Script
@@ -158,6 +164,51 @@ fun interface ParityStepHook {
 class ParityHarness(
     private val artifactRoot: Path = locateRepositoryRoot().resolve("temp/parity"),
 ) {
+
+    fun collectMechanicsParityTrace(
+        path: ParityRuntimePath,
+        seed: Long,
+        actionTrace: List<HeadlessReplayStep>,
+        startWave: Int = 1,
+        tickCap: Int = 20_000,
+        playerName: String = "parity-mechanics-trace",
+        settingsOverrides: Map<String, String> = emptyMap(),
+        configurePlayer: (Player) -> Unit = {},
+        stepHook: ParityStepHook = ParityStepHook { _, _, _, _ -> },
+    ): List<FastParityTrace> {
+        val run =
+            runPath(
+                path = path,
+                seed = seed,
+                actionTrace = actionTrace,
+                startWave = startWave,
+                includeFutureLeakage = false,
+                playerName = playerName,
+                settingsOverrides = settingsOverrides,
+                configurePlayer = configurePlayer,
+                stepHook = stepHook,
+            )
+        return exportMechanicsParityTrace(run.snapshots, tickCap = tickCap)
+    }
+
+    fun collectMechanicsParityTrace(
+        pathId: String,
+        seed: Long,
+        packedActions: IntArray,
+        startWave: Int = 1,
+        tickCap: Int = 20_000,
+        playerName: String = "parity-mechanics-trace",
+        settingsOverrides: Map<String, String> = emptyMap(),
+    ): List<FastParityTrace> =
+        collectMechanicsParityTrace(
+            path = resolveRuntimePath(pathId),
+            seed = seed,
+            actionTrace = decodePackedActionTrace(packedActions),
+            startWave = startWave,
+            tickCap = tickCap,
+            playerName = playerName,
+            settingsOverrides = settingsOverrides,
+        )
 
     fun runAndCompare(
         seed: Long,
@@ -354,6 +405,54 @@ class ParityHarness(
         )
     }
 
+    private fun exportMechanicsParityTrace(
+        snapshots: List<ParitySnapshot>,
+        tickCap: Int,
+    ): List<FastParityTrace> {
+        if (snapshots.isEmpty()) {
+            return emptyList()
+        }
+        val episodeStartTick = snapshots.first().tick
+        return snapshots.mapIndexed { index, snapshot ->
+            val previous = snapshots.getOrNull(index - 1)
+            val observation = snapshot.observation
+            val jadTrace = snapshot.jadTelegraph
+            val terminal =
+                FastTerminalStateEvaluator.infer(
+                    playerHitpointsCurrent = observation.player.hitpointsCurrent,
+                    waveId = observation.wave.wave,
+                    remainingNpcs = observation.wave.remaining,
+                    observationTick = observation.tick,
+                    episodeStartTick = episodeStartTick,
+                    tickCap = tickCap,
+                )
+            FastParityTrace(
+                tickIndex = observation.tick - episodeStartTick,
+                actionName = parityActionName(snapshot.action),
+                actionAccepted = snapshot.actionResult?.actionApplied ?: true,
+                rejectionCode = parityRejectionCode(snapshot.actionResult?.rejectionReason).code,
+                playerHitpoints = observation.player.hitpointsCurrent,
+                playerPrayerPoints = observation.player.prayerCurrent,
+                runEnabled = observation.player.running,
+                inventoryAmmo = observation.player.consumables.ammoCount,
+                inventorySharks = observation.player.consumables.sharkCount,
+                inventoryPrayerPotions = observation.player.consumables.prayerPotionDoseCount,
+                waveId = observation.wave.wave,
+                remainingNpcs = observation.wave.remaining,
+                visibleTargetOrder = observation.npcs.map { it.npcIndex }.toIntArray(),
+                visibleNpcType = observation.npcs.map { it.id }.toTypedArray(),
+                visibleNpcHitpoints = observation.npcs.map { it.hitpointsCurrent }.toIntArray(),
+                visibleNpcAlive =
+                    observation.npcs.map { npc -> !npc.dead && npc.hitpointsCurrent > 0 }.toBooleanArray(),
+                jadTelegraphState = jadTrace?.telegraphStateCode ?: 0,
+                jadHitResolveOutcome = jadResolveOutcome(jadTrace),
+                damageDealt = parityDamageDealt(previous, snapshot),
+                damageTaken = parityDamageTaken(previous, snapshot),
+                terminalCode = terminal.terminalCode,
+            )
+        }
+    }
+
     private fun fightCaveNpcs(player: Player): List<NPC> {
         val instance = player.instance()
         val source =
@@ -369,6 +468,103 @@ class ParityHarness(
 
         return source.filter { it.id in FIGHT_CAVE_NPC_IDS }
     }
+
+    private fun resolveRuntimePath(pathId: String): ParityRuntimePath =
+        ParityRuntimePath.values().firstOrNull { it.id == pathId }
+            ?: error("Unsupported parity runtime path '$pathId'.")
+
+    private fun decodePackedActionTrace(packedActions: IntArray): List<HeadlessReplayStep> {
+        require(packedActions.size % FastActionCodec.PACKED_WORD_COUNT == 0) {
+            "Packed parity action trace length must be a multiple of ${FastActionCodec.PACKED_WORD_COUNT}, " +
+                "got ${packedActions.size}."
+        }
+        val actionCount = packedActions.size / FastActionCodec.PACKED_WORD_COUNT
+        return List(actionCount) { actionIndex ->
+            val decoded =
+                FastActionCodec.decode(
+                    packedActions = packedActions,
+                    offset = actionIndex * FastActionCodec.PACKED_WORD_COUNT,
+                )
+            HeadlessReplayStep(action = toHeadlessAction(decoded), ticksAfter = 1)
+        }
+    }
+
+    private fun toHeadlessAction(decoded: FastDecodedAction): HeadlessAction =
+        when (decoded.actionId) {
+            0 -> HeadlessAction.Wait
+            1 -> {
+                val tile = checkNotNull(decoded.tile)
+                HeadlessAction.WalkToTile(Tile(tile.x, tile.y, tile.level))
+            }
+            2 -> HeadlessAction.AttackVisibleNpc(checkNotNull(decoded.visibleNpcIndex))
+            3 ->
+                HeadlessAction.ToggleProtectionPrayer(
+                    when (checkNotNull(decoded.prayer)) {
+                        FastProtectionPrayer.ProtectFromMagic -> HeadlessProtectionPrayer.ProtectFromMagic
+                        FastProtectionPrayer.ProtectFromMissiles -> HeadlessProtectionPrayer.ProtectFromMissiles
+                        FastProtectionPrayer.ProtectFromMelee -> HeadlessProtectionPrayer.ProtectFromMelee
+                        FastProtectionPrayer.None -> error("None is not a valid toggle prayer action.")
+                    },
+                )
+            4 -> HeadlessAction.EatShark
+            5 -> HeadlessAction.DrinkPrayerPotion
+            6 -> HeadlessAction.ToggleRun
+            else -> HeadlessAction.Wait
+        }
+
+    private fun parityActionName(action: HeadlessAction?): String =
+        when (action?.type) {
+            null -> "reset"
+            HeadlessActionType.Wait -> "wait"
+            HeadlessActionType.WalkToTile -> "walk_to_tile"
+            HeadlessActionType.AttackVisibleNpc -> "attack_visible_npc"
+            HeadlessActionType.ToggleProtectionPrayer -> "toggle_protection_prayer"
+            HeadlessActionType.EatShark -> "eat_shark"
+            HeadlessActionType.DrinkPrayerPotion -> "drink_prayer_potion"
+            HeadlessActionType.ToggleRun -> "toggle_run"
+        }
+
+    private fun parityRejectionCode(reason: HeadlessActionRejectReason?): FastRejectionCode =
+        when (reason) {
+            null -> FastRejectionCode.None
+            HeadlessActionRejectReason.AlreadyActedThisTick -> FastRejectionCode.AlreadyActedThisTick
+            HeadlessActionRejectReason.InvalidTargetIndex -> FastRejectionCode.InvalidTargetIndex
+            HeadlessActionRejectReason.TargetNotVisible -> FastRejectionCode.TargetNotVisible
+            HeadlessActionRejectReason.PlayerBusy -> FastRejectionCode.PlayerBusy
+            HeadlessActionRejectReason.MissingConsumable -> FastRejectionCode.MissingConsumable
+            HeadlessActionRejectReason.ConsumptionLocked -> FastRejectionCode.ConsumptionLocked
+            HeadlessActionRejectReason.PrayerPointsDepleted -> FastRejectionCode.PrayerPointsDepleted
+            HeadlessActionRejectReason.InsufficientRunEnergy -> FastRejectionCode.InsufficientRunEnergy
+            HeadlessActionRejectReason.NoMovementRequired -> FastRejectionCode.NoMovementRequired
+        }
+
+    private fun parityDamageDealt(previous: ParitySnapshot?, current: ParitySnapshot): Float {
+        if (previous == null) {
+            return 0f
+        }
+        val before = previous.fightCaveNpcs.sumOf { it.hitpointsCurrent.coerceAtLeast(0) }
+        val after = current.fightCaveNpcs.sumOf { it.hitpointsCurrent.coerceAtLeast(0) }
+        return (before - after).coerceAtLeast(0).toFloat()
+    }
+
+    private fun parityDamageTaken(previous: ParitySnapshot?, current: ParitySnapshot): Float {
+        if (previous == null) {
+            return 0f
+        }
+        return (
+            previous.observation.player.hitpointsCurrent -
+                current.observation.player.hitpointsCurrent
+        ).coerceAtLeast(0).toFloat()
+    }
+
+    private fun jadResolveOutcome(trace: JadTelegraphTrace?): String =
+        when {
+            trace == null -> "none"
+            trace.resolvedDamage < 0 -> "pending"
+            trace.protectedAtPrayerCheck -> "protected"
+            trace.resolvedDamage == 0 -> "zero_damage"
+            else -> "hit"
+        }
 
     private fun firstMismatch(oracleRun: ParityRunOutput, headlessRun: ParityRunOutput): ParityMismatch? {
         if (oracleRun.snapshots.size != headlessRun.snapshots.size) {
@@ -520,8 +716,6 @@ class ParityHarness(
             )
     }
 }
-
-
 
 
 

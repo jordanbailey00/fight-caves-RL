@@ -1,6 +1,16 @@
 import content.area.karamja.tzhaar_city.TzhaarFightCave
 import content.entity.player.effect.energy.MAX_RUN_ENERGY
 import content.entity.player.effect.energy.runEnergy
+import headless.fast.FIGHT_CAVE_DEFAULT_EQUIPMENT_TEMPLATE
+import headless.fast.FIGHT_CAVE_DEFAULT_INVENTORY_TEMPLATE
+import headless.fast.FIGHT_CAVE_EPISODE_SEED_KEY
+import headless.fast.FIGHT_CAVE_FIXED_LEVELS
+import headless.fast.FIGHT_CAVE_RESET_CLOCKS
+import headless.fast.FIGHT_CAVE_RESET_VARIABLES
+import headless.fast.FIGHT_CAVE_REMAINING_KEY
+import headless.fast.FIGHT_CAVE_ROTATION_KEY
+import headless.fast.FIGHT_CAVE_WAVE_KEY
+import headless.fast.FightCaveEquipmentSlot
 import content.quest.clearInstance
 import content.quest.instance
 import content.quest.instanceOffset
@@ -53,7 +63,7 @@ class FightCaveEpisodeInitializer(
         require(config.sharks >= 0) { "Shark count cannot be negative, got ${config.sharks}." }
 
         setSeededRandom(config.seed, trackCalls = true)
-        player[EPISODE_SEED_KEY] = config.seed
+        player[FIGHT_CAVE_EPISODE_SEED_KEY] = config.seed
 
         fightCave.ensureWavesLoaded(configFiles)
 
@@ -84,7 +94,7 @@ class FightCaveEpisodeInitializer(
         player.clearAnim()
         player.clearGfx()
 
-        for (clock in RESET_CLOCKS) {
+        for (clock in FIGHT_CAVE_RESET_CLOCKS) {
             player.stop(clock)
         }
 
@@ -94,7 +104,7 @@ class FightCaveEpisodeInitializer(
     private fun resetFightCaveState(player: Player) {
         clearPreviousInstance(player)
 
-        for (variable in RESET_VARIABLES) {
+        for (variable in FIGHT_CAVE_RESET_VARIABLES) {
             player.clear(variable)
         }
 
@@ -124,7 +134,7 @@ class FightCaveEpisodeInitializer(
     private fun resetPlayerStatsAndResources(player: Player) {
         for (skill in Skill.all) {
             player.experience.removeBlock(skill)
-            val level = FIXED_LEVELS[skill] ?: 1
+            val level = FIGHT_CAVE_FIXED_LEVELS[skill] ?: 1
             player.experience.set(skill, Level.experience(skill, level))
             player.levels.set(skill, level)
             player.experience.addBlock(skill)
@@ -140,21 +150,25 @@ class FightCaveEpisodeInitializer(
         val equipmentReset =
             player.equipment.transaction {
                 clear()
-                set(EquipSlot.Hat.index, Item("coif"))
-                set(EquipSlot.Weapon.index, Item("rune_crossbow"))
-                set(EquipSlot.Chest.index, Item("black_dragonhide_body"))
-                set(EquipSlot.Legs.index, Item("black_dragonhide_chaps"))
-                set(EquipSlot.Hands.index, Item("black_dragonhide_vambraces"))
-                set(EquipSlot.Feet.index, Item("snakeskin_boots"))
-                set(EquipSlot.Ammo.index, Item("adamant_bolts", config.ammo))
+                for (entry in FIGHT_CAVE_DEFAULT_EQUIPMENT_TEMPLATE) {
+                    val amount = if (entry.slot == FightCaveEquipmentSlot.Ammo) config.ammo else entry.amount
+                    set(equipSlotIndex(entry.slot), Item(entry.itemId, amount))
+                }
             }
         check(equipmentReset) { "Failed to reset headless episode equipment loadout." }
 
         val inventoryReset =
             player.inventory.transaction {
                 clear()
-                add("prayer_potion_4", config.prayerPotions)
-                add("shark", config.sharks)
+                for (entry in FIGHT_CAVE_DEFAULT_INVENTORY_TEMPLATE) {
+                    val amount =
+                        when (entry.itemId) {
+                            "prayer_potion_4" -> config.prayerPotions
+                            "shark" -> config.sharks
+                            else -> entry.amount
+                        }
+                    add(entry.itemId, amount)
+                }
             }
         check(inventoryReset) { "Failed to reset headless episode consumable inventory." }
     }
@@ -167,40 +181,14 @@ class FightCaveEpisodeInitializer(
         fightCave.startWave(player, config.startWave, start = false)
     }
 
-    companion object {
-        private const val EPISODE_SEED_KEY = "episode_seed"
-        private const val FIGHT_CAVE_WAVE_KEY = "fight_cave_wave"
-        private const val FIGHT_CAVE_ROTATION_KEY = "fight_cave_rotation"
-        private const val FIGHT_CAVE_REMAINING_KEY = "fight_cave_remaining"
-
-        private val RESET_CLOCKS =
-            listOf(
-                "delay",
-                "movement_delay",
-                "food_delay",
-                "drink_delay",
-                "combo_delay",
-                "fight_cave_cooldown",
-            )
-
-        private val FIXED_LEVELS =
-            mapOf(
-                Skill.Attack to 1,
-                Skill.Strength to 1,
-                Skill.Defence to 70,
-                Skill.Constitution to 700,
-                Skill.Ranged to 70,
-                Skill.Prayer to 43,
-                Skill.Magic to 1,
-            )
-
-        private val RESET_VARIABLES =
-            listOf(
-                "fight_cave_wave",
-                "fight_cave_rotation",
-                "fight_cave_remaining",
-                "fight_cave_start_time",
-                "healed",
-            )
-    }
+    private fun equipSlotIndex(slot: FightCaveEquipmentSlot): Int =
+        when (slot) {
+            FightCaveEquipmentSlot.Hat -> EquipSlot.Hat.index
+            FightCaveEquipmentSlot.Weapon -> EquipSlot.Weapon.index
+            FightCaveEquipmentSlot.Chest -> EquipSlot.Chest.index
+            FightCaveEquipmentSlot.Legs -> EquipSlot.Legs.index
+            FightCaveEquipmentSlot.Hands -> EquipSlot.Hands.index
+            FightCaveEquipmentSlot.Feet -> EquipSlot.Feet.index
+            FightCaveEquipmentSlot.Ammo -> EquipSlot.Ammo.index
+        }
 }

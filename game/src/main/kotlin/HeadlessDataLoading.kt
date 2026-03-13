@@ -134,7 +134,12 @@ private fun validateRequiredSettings(requiredSettings: List<String>, files: List
 internal fun locateRepositoryRoot(): Path {
     var current = Paths.get("").toAbsolutePath().normalize()
     while (true) {
-        if (Files.isRegularFile(current.resolve("FCspec.md")) && Files.isDirectory(current.resolve("data"))) {
+        if (
+            Files.isRegularFile(current.resolve("settings.gradle.kts")) &&
+                Files.isDirectory(current.resolve("game")) &&
+                Files.isDirectory(current.resolve("data")) &&
+                Files.isRegularFile(current.resolve("config/headless_manifest.toml"))
+        ) {
             return current
         }
         current = current.parent ?: break
@@ -151,6 +156,5 @@ internal fun resolvePath(root: Path, path: String): Path {
         root.resolve(normalized).normalize()
     }
 }
-
 
 

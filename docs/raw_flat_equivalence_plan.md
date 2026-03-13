@@ -1,5 +1,11 @@
 # Raw Vs Flat Equivalence Plan
 
+## Documentation Status
+
+- Status: superseded for active planning under `pivot_documentation_triage.md`.
+- Current authority: `pivot_plan.md`, `pivot_implementation_plan.md`, and `raw_flat_observation_contract.md`.
+- Retention reason: kept for historical flat-path certification context; do not treat it as the active planning surface.
+
 Date: 2026-03-09
 
 This document defines the certification gate for proving that the flat training observation path remains semantically anchored to the raw headless observation path.

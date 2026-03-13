@@ -1,5 +1,11 @@
 # Void Fight Caves - 1:1 Headless Simulator Extraction Spec (RL-Ready)
 
+## Documentation Status
+
+- Status: superseded for active workspace planning under `pivot_documentation_triage.md`.
+- Current authority: `pivot_plan.md` and `pivot_implementation_plan.md`.
+- Retention reason: kept for historical simulator/extraction context and reference to the earlier 1:1 headless effort.
+
 ## 0) Purpose
 
 Build a headless, high-throughput, deterministic Fight Caves simulator from this **Void RSPS** codebase while preserving **1:1 gameplay parity** with the headed RSPS server behavior.
@@ -584,5 +590,4 @@ Execution closeout notes:
 
 Environment clarification:
 - Project/test bytecode target is Java 21; run verification tests under a Java 21 runtime.
-
 

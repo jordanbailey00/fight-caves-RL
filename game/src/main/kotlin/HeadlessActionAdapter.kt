@@ -177,6 +177,9 @@ class HeadlessActionAdapter(
         }
 
         player.interactNpc(target, "Attack")
+        val destination = player.steps.destination
+        val pathingRequired = destination != Tile.EMPTY && destination != player.tile
+        val attackResolution = if (pathingRequired) "moved_or_pathed_toward_target" else "attacked_immediately_in_place"
         return applied(
             action = action,
             metadata =
@@ -185,6 +188,10 @@ class HeadlessActionAdapter(
                     "target_npc_id" to target.id,
                     "target_npc_tile" to target.tile.toString(),
                     "visible_npc_index" to index.toString(),
+                    "attack_resolution" to attackResolution,
+                    "interaction_mode" to (player.mode::class.simpleName ?: "Unknown"),
+                    "destination_tile" to destination.toString(),
+                    "pathing_required" to pathingRequired.toString(),
                 ),
         )
     }
@@ -347,7 +354,6 @@ class HeadlessActionAdapter(
             )
     }
 }
-
 
 
 

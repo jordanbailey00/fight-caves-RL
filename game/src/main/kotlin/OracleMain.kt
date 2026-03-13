@@ -49,6 +49,15 @@ data class OracleRuntime(
         return adapter.apply(player, action)
     }
 
+    override fun applyActionsBatch(players: List<Player>, actions: List<HeadlessAction>): List<HeadlessActionResult> {
+        require(players.size == actions.size) {
+            "Batch action application requires player/action parity: ${players.size} != ${actions.size}."
+        }
+        return players.zip(actions).map { (player, action) ->
+            applyFightCaveAction(player, action)
+        }
+    }
+
     override fun observeFightCave(player: Player, includeFutureLeakage: Boolean): HeadlessObservationV1 {
         val builder = checkNotNull(observationBuilder) { "Oracle observation builder is unavailable; ensure oracle content scripts are loaded." }
         return builder.build(player, includeFutureLeakage)
@@ -58,6 +67,9 @@ data class OracleRuntime(
         val builder = checkNotNull(flatObservationBuilder) { "Oracle flat observation builder is unavailable; ensure oracle content scripts are loaded." }
         return builder.build(player)
     }
+
+    override fun observeFlatBatch(players: List<Player>): HeadlessTrainingFlatObservationBatchV1 =
+        packFlatObservationBatch(players.map(::observeFightCaveFlat))
 
     override fun shutdown() {
         World.clear()

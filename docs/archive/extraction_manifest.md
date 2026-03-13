@@ -1,5 +1,11 @@
 # Fight Caves Headless Extraction Manifest (Step 1)
 
+## Documentation Status
+
+- Status: archive candidate under `pivot_documentation_triage.md`.
+- Current authority: `pivot_plan.md` and `pivot_implementation_plan.md`.
+- Retention reason: kept temporarily for historical extraction-boundary context; do not treat it as active pivot planning guidance.
+
 ## 1) Scope and Intent
 
 This manifest defines the initial keep/cut boundary for extracting a deterministic Fight Caves-only runtime from Void.
@@ -285,7 +291,6 @@ High confidence (direct evidence):
 Inference-based (must be validated by tests):
 - Minimal shared definition set needed once headless module wiring bypasses full `dirs.txt` scanning.
 - Whether additional animation/sound/interface files are needed for strict parity beyond no-op visual calls.
-
 
 
 

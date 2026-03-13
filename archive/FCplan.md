@@ -1,5 +1,11 @@
 # FCplan.md - Void Fight Caves Headless Extraction and 1:1 Parity Execution Plan
 
+## Documentation Status
+
+- Status: archive candidate under `pivot_documentation_triage.md`.
+- Current authority: `pivot_plan.md` and `pivot_implementation_plan.md`.
+- Retention reason: kept temporarily for historical extraction-plan context; do not use as the active workspace execution plan.
+
 This plan is implementation-facing and must be executed in order.
 
 ## Iteration Tracking
@@ -729,7 +735,6 @@ Exit criteria:
 4. Policy replay into headed RSPS demonstrations.
 
 These tasks are blocked until full 1:1 parity is confirmed.
-
 
 
 

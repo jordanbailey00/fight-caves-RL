@@ -257,7 +257,7 @@ object HeadlessPerformanceReportGenerator {
             availableProcessors = Runtime.getRuntime().availableProcessors(),
             maxMemoryBytes = Runtime.getRuntime().maxMemory(),
             hostClass = hostClass,
-            performanceSourceOfTruth = hostClass == "linux_native",
+            performanceSourceOfTruth = hostClass == "linux_native" || hostClass == "wsl2",
             jvmInputArguments = ManagementFactory.getRuntimeMXBean().inputArguments.toList(),
         )
     }
@@ -284,7 +284,11 @@ object HeadlessPerformanceReportGenerator {
     private fun locateRepositoryRoot(): Path {
         var current = Path.of("").toAbsolutePath().normalize()
         while (true) {
-            if (Files.isRegularFile(current.resolve("FCspec.md")) && Files.isDirectory(current.resolve("docs"))) {
+            if (
+                Files.isRegularFile(current.resolve("settings.gradle.kts")) &&
+                    Files.isDirectory(current.resolve("game")) &&
+                    Files.isDirectory(current.resolve("docs"))
+            ) {
                 return current
             }
             current = current.parent ?: break

@@ -1,5 +1,11 @@
 ﻿# E2E Acceptance - Fight Caves Headless 1:1 Parity
 
+## Documentation Status
+
+- Status: archive candidate under `pivot_documentation_triage.md`.
+- Current authority: `pivot_plan.md` and `pivot_implementation_plan.md`.
+- Retention reason: kept temporarily for historical extraction-era acceptance context; do not treat it as the active pivot acceptance gate.
+
 Run this suite only after all `FCplan.md` steps are complete.
 
 This is the final gate for acceptance.

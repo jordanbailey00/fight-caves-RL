@@ -2,6 +2,11 @@ import content.area.karamja.tzhaar_city.JadTelegraphState
 import content.area.karamja.tzhaar_city.jadTelegraphState
 import content.entity.player.effect.energy.MAX_RUN_ENERGY
 import content.entity.player.effect.energy.runEnergy
+import headless.fast.FIGHT_CAVE_EPISODE_SEED_KEY
+import headless.fast.FIGHT_CAVE_REMAINING_KEY
+import headless.fast.FIGHT_CAVE_ROTATION_KEY
+import headless.fast.FIGHT_CAVE_WAVE_KEY
+import headless.fast.fightCavePrayerPotionDoseCount
 import content.skill.prayer.getActivePrayerVarKey
 import world.gregs.voidps.engine.GameLoop
 import world.gregs.voidps.engine.client.variable.hasClock
@@ -229,7 +234,7 @@ class HeadlessObservationBuilder(
         val consumables =
             HeadlessObservationConsumables(
                 sharkCount = player.inventory.count("shark"),
-                prayerPotionDoseCount = prayerPotionDoseCount(player),
+                prayerPotionDoseCount = fightCavePrayerPotionDoseCount(player),
                 ammoId = ammoItem.id.ifBlank { null },
                 ammoCount = if (ammoItem.isEmpty()) 0 else ammoItem.amount,
             )
@@ -272,7 +277,7 @@ class HeadlessObservationBuilder(
 
         return HeadlessObservationV1(
             tick = GameLoop.tick,
-            episodeSeed = player[EPISODE_SEED_KEY, -1L],
+            episodeSeed = player[FIGHT_CAVE_EPISODE_SEED_KEY, -1L],
             player =
                 HeadlessObservationPlayer(
                     tile = HeadlessObservationTile.from(player.tile),
@@ -297,28 +302,5 @@ class HeadlessObservationBuilder(
             npcs = observedNpcs,
             debugFutureLeakage = debugFutureLeakage,
         )
-    }
-
-    private fun prayerPotionDoseCount(player: Player): Int {
-        var doses = 0
-        for (slot in player.inventory.indices) {
-            val item = player.inventory[slot]
-            doses +=
-                when (item.id) {
-                    "prayer_potion_4" -> 4 * item.amount
-                    "prayer_potion_3" -> 3 * item.amount
-                    "prayer_potion_2" -> 2 * item.amount
-                    "prayer_potion_1" -> item.amount
-                    else -> 0
-                }
-        }
-        return doses
-    }
-
-    companion object {
-        private const val EPISODE_SEED_KEY = "episode_seed"
-        private const val FIGHT_CAVE_WAVE_KEY = "fight_cave_wave"
-        private const val FIGHT_CAVE_ROTATION_KEY = "fight_cave_rotation"
-        private const val FIGHT_CAVE_REMAINING_KEY = "fight_cave_remaining"
     }
 }

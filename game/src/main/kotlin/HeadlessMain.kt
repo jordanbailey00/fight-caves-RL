@@ -58,6 +58,15 @@ data class HeadlessRuntime(
         return adapter.apply(player, action)
     }
 
+    override fun applyActionsBatch(players: List<Player>, actions: List<HeadlessAction>): List<HeadlessActionResult> {
+        require(players.size == actions.size) {
+            "Batch action application requires player/action parity: ${players.size} != ${actions.size}."
+        }
+        return players.zip(actions).map { (player, action) ->
+            applyFightCaveAction(player, action)
+        }
+    }
+
     fun applyFightCaveActionAndTick(player: Player, action: HeadlessAction, ticksAfter: Int = 1): HeadlessActionResult {
         val result = applyFightCaveAction(player, action)
         tick(ticksAfter)
@@ -73,6 +82,9 @@ data class HeadlessRuntime(
         val builder = checkNotNull(flatObservationBuilder) { "Headless flat observation builder is unavailable; ensure headless content scripts are loaded." }
         return builder.build(player)
     }
+
+    override fun observeFlatBatch(players: List<Player>): HeadlessTrainingFlatObservationBatchV1 =
+        packFlatObservationBatch(players.map(::observeFightCaveFlat))
 
     override fun shutdown() {
         World.clear()
